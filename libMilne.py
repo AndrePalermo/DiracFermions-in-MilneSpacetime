@@ -12,6 +12,8 @@ def fhw(τ, μ, mass, px, py):
     """
     #Apparently this function is stable only for mu>0. For mu<0 it blows up at mu~-15. The next line uses parity to prevent the problem
     μ = np.abs(μ)
+    # if(mp.sqrt(mass**2 + px**2 + py**2) * τ > 10):
+        # return 1/(mp.sqrt(mass**2 + px**2 + py**2) * τ+1e-10)
     
     result = (1/16) * 1j * mp.exp(-mp.pi * μ) * mp.pi * (
         -mp.hankel1(-3/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ) * mp.hankel2(-1/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
@@ -54,6 +56,9 @@ def jw(τ, μ, mass, px, py):
     """
         Returns j_w
     """
+    # if(mp.sqrt(mass**2 + px**2 + py**2) * τ > 10):
+        # return mp.exp(-2*1j*mp.sqrt(mass**2 + px**2 + py**2) * τ)/(mp.sqrt(mass**2 + px**2 + py**2) * τ)**2
+    
     result = -(1/8) * mp.pi * (
         mp.hankel2(-1/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ) *
         (mp.hankel2(-3/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ) -
@@ -68,6 +73,9 @@ def cjw(τ, μ, mass, px, py):
     """
         Returns j_w^* (i.e. the conjugate of j_ww)
     """
+    # if(mp.sqrt(mass**2 + px**2 + py**2) * τ > 10):
+        # return mp.exp(2*1j*mp.sqrt(mass**2 + px**2 + py**2) * τ)/(mp.sqrt(mass**2 + px**2 + py**2) * τ)**2
+    
     result = -(1/8) * mp.pi * (
         mp.hankel1(-3/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ) * mp.hankel1(-1/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
         - mp.hankel1(1/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ) * mp.hankel1(-1/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
@@ -79,6 +87,10 @@ def sw(τ, μ, mass, px, py):
     """
         Returns s_w
     """
+    # if(mp.sqrt(mass**2 + px**2 + py**2) * τ > 10):
+        # return -μ/(mp.sqrt(mass**2 + px**2 + py**2) * τ)**2
+    
+    
     result = (mp.pi / 4) * mp.exp(-μ * mp.pi) * (
         mp.hankel1(1/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ) * mp.hankel2(1/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
         - mp.hankel1(-1/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ) * mp.hankel2(-1/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
@@ -89,6 +101,9 @@ def tw(τ, μ, mass, px, py):
     """
         Returns t_w
     """
+    # if(mp.sqrt(mass**2 + px**2 + py**2) * τ > 10):
+        # return -mp.exp(-2*1j*mp.sqrt(mass**2 + px**2 + py**2) * τ)/(mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    
     result = -(mp.pi / 2) * (
             mp.hankel2(1/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ) * mp.hankel2(1/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
         )
@@ -98,6 +113,9 @@ def ctw(τ, μ, mass, px, py):
     """
         Returns t_w^* (i.e. the conjugate of t_w)
     """
+    # if(mp.sqrt(mass**2 + px**2 + py**2) * τ > 10):
+        # return -mp.exp(2*1j*mp.sqrt(mass**2 + px**2 + py**2) * τ)/(mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    
     result = -(mp.pi / 2) * (
             mp.hankel1(1/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ) * mp.hankel1(1/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
         )
@@ -436,15 +454,16 @@ def compute_normalized_eigenvectors(τ, μ, mass, px, py, β, SP):
     s=mp.sign(SP)
     pT_sq = px**2 + py**2
     mL = mp.sqrt(mass**2+μ**2/τ**2)
+    eps_ = 1e-12
 
     eig_valp = eigenvals(τ, μ, 1, 1, β, SP, mass, mp.sqrt(pT_sq))
     eig_valm = eigenvals(τ, μ, 1, -1, β, SP, mass, mp.sqrt(pT_sq))
 
-    fhw_val = fhw(τ, μ, mass, px, py)
-    jw_val = jw(τ, μ, mass, px, py)
-    cjw_val = mp.conj(jw_val)
-    sw_val = sw(τ, μ, mass, px, py)
-    tw_val = tw(τ, μ, mass, px, py)
+    fhw_val = fhw(τ, μ, mass, px, py)+eps_
+    jw_val = jw(τ, μ, mass, px, py)+eps_
+    cjw_val = mp.conj(jw_val)+eps_
+    sw_val = sw(τ, μ, mass, px, py)+eps_
+    tw_val = tw(τ, μ, mass, px, py)+eps_
 
     mT = mp.sqrt(mass**2 + pT_sq)
 
