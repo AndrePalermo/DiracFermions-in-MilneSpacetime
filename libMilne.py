@@ -136,313 +136,313 @@ def eigenvals(τ, μ, pm1, pm2, β, SP, mass, pT):
 
     return pm1 * mp.sqrt(term1 + term2 + term3)
 
-def compute_normalized_vector_plusplus(τ, μ, mass, px, py, β, SP):
-    """
-        returns the eigenvector corresponding to +E_+. 
+# def compute_normalized_vector_plusplus(τ, μ, mass, px, py, β, SP):
+#     """
+#         returns the eigenvector corresponding to +E_+. 
         
-        !!! WARNING: this only works if px^2+py^2 != 0 !!!
-            if px^2 + py^2 == 0 it is not an eigenvector
-    """
-    s=mp.sign(SP)
-    pT_sq = px**2 + py**2
-    mL = mp.sqrt(mass**2+μ**2/τ**2)
+#         !!! WARNING: this only works if px^2+py^2 != 0 !!!
+#             if px^2 + py^2 == 0 it is not an eigenvector
+#     """
+#     s=mp.sign(SP)
+#     pT_sq = px**2 + py**2
+#     mL = mp.sqrt(mass**2+μ**2/τ**2)
 
-    eig_val = eigenvals(τ, μ, 1, 1, β, SP, mass, mp.sqrt(pT_sq))
+#     eig_val = eigenvals(τ, μ, 1, 1, β, SP, mass, mp.sqrt(pT_sq))
 
-    fhw_val = fhw(τ, μ, mass, px, py)
-    jw_val = jw(τ, μ, mass, px, py)
-    cjw_val = mp.conj(jw_val)
-    sw_val = sw(τ, μ, mass, px, py)
-    tw_val = tw(τ, μ, mass, px, py)
+#     fhw_val = fhw(τ, μ, mass, px, py)
+#     jw_val = jw(τ, μ, mass, px, py)
+#     cjw_val = mp.conj(jw_val)
+#     sw_val = sw(τ, μ, mass, px, py)
+#     tw_val = tw(τ, μ, mass, px, py)
 
-    mT = mp.sqrt(mass**2 + pT_sq)
+#     mT = mp.sqrt(mass**2 + pT_sq)
 
-    # First component
-    comp1 = (
-        β * (mass * (-mass**2 + mL**2 + mT**2) * s + mL * mT**3 * τ * fhw_val) 
-    ) / (
-        2 * mass * mT**2 * s * τ * eig_val * jw_val
-    ) + (
-        mL + mass * mT * s * τ * fhw_val
-    ) / (
-        2 * mass * mT * s * τ * jw_val
-    ) + (
-        SP * (mass * mL + mass**2 * mT * s * τ * fhw_val - pT_sq * s * μ * sw_val)
-    ) / (
-        4 * mass * mT**2 * s * τ * eig_val * jw_val
-    )
+#     # First component
+#     comp1 = (
+#         β * (mass * (-mass**2 + mL**2 + mT**2) * s + mL * mT**3 * τ * fhw_val) 
+#     ) / (
+#         2 * mass * mT**2 * s * τ * eig_val * jw_val
+#     ) + (
+#         mL + mass * mT * s * τ * fhw_val
+#     ) / (
+#         2 * mass * mT * s * τ * jw_val
+#     ) + (
+#         SP * (mass * mL + mass**2 * mT * s * τ * fhw_val - pT_sq * s * μ * sw_val)
+#     ) / (
+#         4 * mass * mT**2 * s * τ * eig_val * jw_val
+#     )
 
-    # Second component
-    comp2 = (
-        (px + 1j * py) * μ / (2 * mass * mT**2 * τ**2 * jw_val)
-        + (px + 1j * py) * β * μ * fhw_val / (2 * mass * τ * eig_val * jw_val)
-        + (px + 1j * py) * SP * (
-            mT**2 * τ**2 * (-mL + mass * mT * s * τ * fhw_val) * sw_val
-            + mass * s * (μ + 1j * mT**3 * τ**3 * cjw_val * tw_val)
-        ) / (4 * mass * mT**3 * s * τ**2 * eig_val * jw_val)
-    )
+#     # Second component
+#     comp2 = (
+#         (px + 1j * py) * μ / (2 * mass * mT**2 * τ**2 * jw_val)
+#         + (px + 1j * py) * β * μ * fhw_val / (2 * mass * τ * eig_val * jw_val)
+#         + (px + 1j * py) * SP * (
+#             mT**2 * τ**2 * (-mL + mass * mT * s * τ * fhw_val) * sw_val
+#             + mass * s * (μ + 1j * mT**3 * τ**3 * cjw_val * tw_val)
+#         ) / (4 * mass * mT**3 * s * τ**2 * eig_val * jw_val)
+#     )
 
-    # Third component
-    comp3 = (
-        (px + 1j * py) * β * μ
-    ) / (
-        2 * mass * τ * eig_val
-    ) + (
-        (px + 1j * py) * SP * (mass * mT * s * τ * jw_val * sw_val - 1j * (mL + mass * mT * s * τ * fhw_val) * tw_val)
-    ) / (
-        4 * mass * mT * s * eig_val * jw_val
-    )
+#     # Third component
+#     comp3 = (
+#         (px + 1j * py) * β * μ
+#     ) / (
+#         2 * mass * τ * eig_val
+#     ) + (
+#         (px + 1j * py) * SP * (mass * mT * s * τ * jw_val * sw_val - 1j * (mL + mass * mT * s * τ * fhw_val) * tw_val)
+#     ) / (
+#         4 * mass * mT * s * eig_val * jw_val
+#     )
 
-    # Fourth component
-    comp4 = (
-        1/2 + (mL * mT * β) / (2 * mass * s * eig_val) + (
-            SP * (mass**2 * mT * τ * jw_val - 1j * pT_sq * μ * tw_val)
-        ) / (
-            4 * mass * mT**2 * τ * eig_val * jw_val
-        )
-    )
+#     # Fourth component
+#     comp4 = (
+#         1/2 + (mL * mT * β) / (2 * mass * s * eig_val) + (
+#             SP * (mass**2 * mT * τ * jw_val - 1j * pT_sq * μ * tw_val)
+#         ) / (
+#             4 * mass * mT**2 * τ * eig_val * jw_val
+#         )
+#     )
 
-    vec = [
-        mp.mpc(comp1),
-        mp.mpc(comp2),
-        mp.mpc(comp3),
-        mp.mpc(comp4)
-    ]
+#     vec = [
+#         mp.mpc(comp1),
+#         mp.mpc(comp2),
+#         mp.mpc(comp3),
+#         mp.mpc(comp4)
+#     ]
 
-    norm = mp.sqrt(sum(vi * mp.conj(vi) for vi in vec))
-    normalized_vec = [vi / norm for vi in vec]
+#     norm = mp.sqrt(sum(vi * mp.conj(vi) for vi in vec))
+#     normalized_vec = [vi / norm for vi in vec]
 
-    return normalized_vec
+#     return normalized_vec
 
-def compute_normalized_vector_plusminus(τ, μ, mass, px, py, β, SP):
-    """
-        returns the eigenvector corresponding to +E_-. 
+# def compute_normalized_vector_plusminus(τ, μ, mass, px, py, β, SP):
+#     """
+#         returns the eigenvector corresponding to +E_-. 
         
-        !!! WARNING: this only works if px^2+py^2 != 0 !!!
-            if px^2 + py^2 == 0 it is not an eigenvector
-    """
-    s = mp.sign(SP)
-    pT_sq = px**2 + py**2
-    mL = mp.sqrt(mass**2 + μ**2 / τ**2)
+#         !!! WARNING: this only works if px^2+py^2 != 0 !!!
+#             if px^2 + py^2 == 0 it is not an eigenvector
+#     """
+#     s = mp.sign(SP)
+#     pT_sq = px**2 + py**2
+#     mL = mp.sqrt(mass**2 + μ**2 / τ**2)
 
-    eig_val = eigenvals(τ, μ, 1, -1, β, SP, mass, mp.sqrt(pT_sq))
+#     eig_val = eigenvals(τ, μ, 1, -1, β, SP, mass, mp.sqrt(pT_sq))
 
-    fhw_val = fhw(τ, μ, mass, px, py)
-    jw_val = jw(τ, μ, mass, px, py)
-    cjw_val = mp.conj(jw_val)
-    sw_val = sw(τ, μ, mass, px, py)
-    tw_val = tw(τ, μ, mass, px, py)
+#     fhw_val = fhw(τ, μ, mass, px, py)
+#     jw_val = jw(τ, μ, mass, px, py)
+#     cjw_val = mp.conj(jw_val)
+#     sw_val = sw(τ, μ, mass, px, py)
+#     tw_val = tw(τ, μ, mass, px, py)
     
-    mT = mp.sqrt(mass**2 + pT_sq)
+#     mT = mp.sqrt(mass**2 + pT_sq)
 
-    # First component
-    comp1 = (
-        β * (mass * (-mass**2 + mL**2 + mT**2) * s - mL * mT**3 * τ * fhw_val)
-    ) / (
-        2 * mass * mT**2 * s * τ * eig_val * jw_val
-    ) - (
-        mL - mass * mT * s * τ * fhw_val
-    ) / (
-        2 * mass * mT * s * τ * jw_val
-    ) - (
-        SP * (mass * mL - mass**2 * mT * s * τ * fhw_val + pT_sq * s * μ * sw_val)
-    ) / (
-        4 * mass * mT**2 * s * τ * eig_val * jw_val
-    )
+#     # First component
+#     comp1 = (
+#         β * (mass * (-mass**2 + mL**2 + mT**2) * s - mL * mT**3 * τ * fhw_val)
+#     ) / (
+#         2 * mass * mT**2 * s * τ * eig_val * jw_val
+#     ) - (
+#         mL - mass * mT * s * τ * fhw_val
+#     ) / (
+#         2 * mass * mT * s * τ * jw_val
+#     ) - (
+#         SP * (mass * mL - mass**2 * mT * s * τ * fhw_val + pT_sq * s * μ * sw_val)
+#     ) / (
+#         4 * mass * mT**2 * s * τ * eig_val * jw_val
+#     )
 
-    # Second component
-    comp2 = (
-        (px + 1j * py) * μ / (2 * mass * mT**2 * τ**2 * jw_val)
-        + (px + 1j * py) * β * μ * fhw_val / (2 * mass * τ * eig_val * jw_val)
-        + (px + 1j * py) * SP * (
-            mT**2 * τ**2 * (mL + mass * mT * s * τ * fhw_val) * sw_val
-            + mass * s * (μ + 1j * mT**3 * τ**3 * cjw_val * tw_val)
-        ) / (4 * mass * mT**3 * s * τ**2 * eig_val * jw_val)
-    )
+#     # Second component
+#     comp2 = (
+#         (px + 1j * py) * μ / (2 * mass * mT**2 * τ**2 * jw_val)
+#         + (px + 1j * py) * β * μ * fhw_val / (2 * mass * τ * eig_val * jw_val)
+#         + (px + 1j * py) * SP * (
+#             mT**2 * τ**2 * (mL + mass * mT * s * τ * fhw_val) * sw_val
+#             + mass * s * (μ + 1j * mT**3 * τ**3 * cjw_val * tw_val)
+#         ) / (4 * mass * mT**3 * s * τ**2 * eig_val * jw_val)
+#     )
 
-    # Third component
-    comp3 = (
-        (px + 1j * py) * β * μ
-    ) / (
-        2 * mass * τ * eig_val
-    ) + (
-        (px + 1j * py) * SP * (mass * mT * s * τ * jw_val * sw_val + 1j * (mL - mass * mT * s * τ * fhw_val) * tw_val)
-    ) / (
-        4 * mass * mT * s * eig_val * jw_val
-    )
+#     # Third component
+#     comp3 = (
+#         (px + 1j * py) * β * μ
+#     ) / (
+#         2 * mass * τ * eig_val
+#     ) + (
+#         (px + 1j * py) * SP * (mass * mT * s * τ * jw_val * sw_val + 1j * (mL - mass * mT * s * τ * fhw_val) * tw_val)
+#     ) / (
+#         4 * mass * mT * s * eig_val * jw_val
+#     )
 
-    # Fourth component
-    comp4 = (
-        1/2 - (mL * mT * β) / (2 * mass * s * eig_val) + (
-            SP * (mass**2 * mT * τ * jw_val - 1j * pT_sq * μ * tw_val)
-        ) / (
-            4 * mass * mT**2 * τ * eig_val * jw_val
-        )
-    )
+#     # Fourth component
+#     comp4 = (
+#         1/2 - (mL * mT * β) / (2 * mass * s * eig_val) + (
+#             SP * (mass**2 * mT * τ * jw_val - 1j * pT_sq * μ * tw_val)
+#         ) / (
+#             4 * mass * mT**2 * τ * eig_val * jw_val
+#         )
+#     )
 
-    vec = [
-        mp.mpc(comp1),
-        mp.mpc(comp2),
-        mp.mpc(comp3),
-        mp.mpc(comp4)
-    ]
+#     vec = [
+#         mp.mpc(comp1),
+#         mp.mpc(comp2),
+#         mp.mpc(comp3),
+#         mp.mpc(comp4)
+#     ]
 
-    norm = mp.sqrt(sum(vi * mp.conj(vi) for vi in vec))
-    normalized_vec = [vi / norm for vi in vec]
+#     norm = mp.sqrt(sum(vi * mp.conj(vi) for vi in vec))
+#     normalized_vec = [vi / norm for vi in vec]
 
-    return normalized_vec
+#     return normalized_vec
 
-def compute_normalized_vector_minusplus(τ, μ, mass, px, py, β, SP):
-    """
-        returns the eigenvector corresponding to -E_+. 
+# def compute_normalized_vector_minusplus(τ, μ, mass, px, py, β, SP):
+#     """
+#         returns the eigenvector corresponding to -E_+. 
         
-        !!! WARNING: this only works if px^2+py^2 != 0 !!!
-            if px^2 + py^2 == 0 it is not an eigenvector
-    """
-    s = mp.sign(SP)
-    pT_sq = px**2 + py**2
-    mL = mp.sqrt(mass**2 + μ**2 / τ**2)
+#         !!! WARNING: this only works if px^2+py^2 != 0 !!!
+#             if px^2 + py^2 == 0 it is not an eigenvector
+#     """
+#     s = mp.sign(SP)
+#     pT_sq = px**2 + py**2
+#     mL = mp.sqrt(mass**2 + μ**2 / τ**2)
 
-    eig_val = eigenvals(τ, μ, 1, 1, β, SP, mass, mp.sqrt(pT_sq))
+#     eig_val = eigenvals(τ, μ, 1, 1, β, SP, mass, mp.sqrt(pT_sq))
 
-    fhw_val = fhw(τ, μ, mass, px, py)
-    jw_val = jw(τ, μ, mass, px, py)
-    cjw_val = mp.conj(jw_val)
-    sw_val = sw(τ, μ, mass, px, py)
-    tw_val = tw(τ, μ, mass, px, py)
+#     fhw_val = fhw(τ, μ, mass, px, py)
+#     jw_val = jw(τ, μ, mass, px, py)
+#     cjw_val = mp.conj(jw_val)
+#     sw_val = sw(τ, μ, mass, px, py)
+#     tw_val = tw(τ, μ, mass, px, py)
     
-    mT = mp.sqrt(mass**2 + pT_sq)
+#     mT = mp.sqrt(mass**2 + pT_sq)
 
-    # First component
-    comp1 = (
-        - (px - 1j * py) * μ / (2 * mass * mT**2 * τ**2 * jw_val)
-        + (px - 1j * py) * β * μ * fhw_val / (2 * mass * τ * eig_val * jw_val)
-        - (px - 1j * py) * SP * (
-            mT**2 * τ**2 * (mL + mass * mT * s * τ * fhw_val) * sw_val
-            + mass * s * (μ + 1j * mT**3 * τ**3 * cjw_val * tw_val)
-        ) / (4 * mass * mT**3 * s * τ**2 * eig_val * jw_val)
-    )
+#     # First component
+#     comp1 = (
+#         - (px - 1j * py) * μ / (2 * mass * mT**2 * τ**2 * jw_val)
+#         + (px - 1j * py) * β * μ * fhw_val / (2 * mass * τ * eig_val * jw_val)
+#         - (px - 1j * py) * SP * (
+#             mT**2 * τ**2 * (mL + mass * mT * s * τ * fhw_val) * sw_val
+#             + mass * s * (μ + 1j * mT**3 * τ**3 * cjw_val * tw_val)
+#         ) / (4 * mass * mT**3 * s * τ**2 * eig_val * jw_val)
+#     )
 
-    # Second component
-    comp2 = (
-        β * (mass * (mass**2 - mL**2 - mT**2) * s + mL * mT**3 * τ * fhw_val)
-    ) / (
-        2 * mass * mT**2 * s * τ * eig_val * jw_val
-    ) - (
-        mL - mass * mT * s * τ * fhw_val
-    ) / (
-        2 * mass * mT * s * τ * jw_val
-    ) - (
-        SP * (mass * mL - mass**2 * mT * s * τ * fhw_val + pT_sq * s * μ * sw_val)
-    ) / (
-        4 * mass * mT**2 * s * τ * eig_val * jw_val
-    )
+#     # Second component
+#     comp2 = (
+#         β * (mass * (mass**2 - mL**2 - mT**2) * s + mL * mT**3 * τ * fhw_val)
+#     ) / (
+#         2 * mass * mT**2 * s * τ * eig_val * jw_val
+#     ) - (
+#         mL - mass * mT * s * τ * fhw_val
+#     ) / (
+#         2 * mass * mT * s * τ * jw_val
+#     ) - (
+#         SP * (mass * mL - mass**2 * mT * s * τ * fhw_val + pT_sq * s * μ * sw_val)
+#     ) / (
+#         4 * mass * mT**2 * s * τ * eig_val * jw_val
+#     )
 
-    # Third component
-    comp3 = (
-        1/2 + (mL * mT * β) / (2 * mass * s * eig_val) + (
-            SP * (mass**2 * mT * τ * jw_val - 1j * pT_sq * μ * tw_val)
-        ) / (
-            4 * mass * mT**2 * τ * eig_val * jw_val
-        )
-    )
+#     # Third component
+#     comp3 = (
+#         1/2 + (mL * mT * β) / (2 * mass * s * eig_val) + (
+#             SP * (mass**2 * mT * τ * jw_val - 1j * pT_sq * μ * tw_val)
+#         ) / (
+#             4 * mass * mT**2 * τ * eig_val * jw_val
+#         )
+#     )
 
-    # Fourth component
-    comp4 = (
-        (px - 1j * py) * β * μ / (2 * mass * τ * eig_val)
-        - (px - 1j * py) * SP * (
-            mass * mT * s * τ * jw_val * sw_val
-            + 1j * (mL - mass * mT * s * τ * fhw_val) * tw_val
-        ) / (4 * mass * mT * s * eig_val * jw_val)
-    )
+#     # Fourth component
+#     comp4 = (
+#         (px - 1j * py) * β * μ / (2 * mass * τ * eig_val)
+#         - (px - 1j * py) * SP * (
+#             mass * mT * s * τ * jw_val * sw_val
+#             + 1j * (mL - mass * mT * s * τ * fhw_val) * tw_val
+#         ) / (4 * mass * mT * s * eig_val * jw_val)
+#     )
 
-    vec = [
-        mp.mpc(comp1),
-        mp.mpc(comp2),
-        mp.mpc(comp3),
-        mp.mpc(comp4)
-    ]
+#     vec = [
+#         mp.mpc(comp1),
+#         mp.mpc(comp2),
+#         mp.mpc(comp3),
+#         mp.mpc(comp4)
+#     ]
 
-    norm = mp.sqrt(sum(vi * mp.conj(vi) for vi in vec))
-    normalized_vec = [vi / norm for vi in vec]
+#     norm = mp.sqrt(sum(vi * mp.conj(vi) for vi in vec))
+#     normalized_vec = [vi / norm for vi in vec]
 
-    return normalized_vec
+#     return normalized_vec
 
-def compute_normalized_vector_minusminus(τ, μ, mass, px, py, β, SP):
-    """
-        returns the eigenvector corresponding to -E_-. 
+# def compute_normalized_vector_minusminus(τ, μ, mass, px, py, β, SP):
+#     """
+#         returns the eigenvector corresponding to -E_-. 
         
-        !!! WARNING: this only works if px^2+py^2 != 0 !!!
-            if px^2 + py^2 == 0 it is not an eigenvector
-    """
-    s = mp.sign(SP)
-    pT_sq = px**2 + py**2
-    mL = mp.sqrt(mass**2 + μ**2 / τ**2)
+#         !!! WARNING: this only works if px^2+py^2 != 0 !!!
+#             if px^2 + py^2 == 0 it is not an eigenvector
+#     """
+#     s = mp.sign(SP)
+#     pT_sq = px**2 + py**2
+#     mL = mp.sqrt(mass**2 + μ**2 / τ**2)
 
-    eig_val = eigenvals(τ, μ, 1, -1, β, SP, mass, mp.sqrt(pT_sq))
+#     eig_val = eigenvals(τ, μ, 1, -1, β, SP, mass, mp.sqrt(pT_sq))
 
-    fhw_val = fhw(τ, μ, mass, px, py)
-    jw_val = jw(τ, μ, mass, px, py)
-    cjw_val = mp.conj(jw_val)
-    sw_val = sw(τ, μ, mass, px, py)
-    tw_val = tw(τ, μ, mass, px, py)
+#     fhw_val = fhw(τ, μ, mass, px, py)
+#     jw_val = jw(τ, μ, mass, px, py)
+#     cjw_val = mp.conj(jw_val)
+#     sw_val = sw(τ, μ, mass, px, py)
+#     tw_val = tw(τ, μ, mass, px, py)
 
-    mT = mp.sqrt(mass**2 + pT_sq)
+#     mT = mp.sqrt(mass**2 + pT_sq)
 
-    # First component
-    comp1 = (
-        - (px - 1j * py) * μ / (2 * mass * mT**2 * τ**2 * jw_val)
-        + (px - 1j * py) * β * μ * fhw_val / (2 * mass * τ * eig_val * jw_val)
-        - (px - 1j * py) * SP * (
-            mT**2 * τ**2 * (-mL + mass * mT * s * τ * fhw_val) * sw_val
-            + mass * s * (μ + 1j * mT**3 * τ**3 * cjw_val * tw_val)
-        ) / (4 * mass * mT**3 * s * τ**2 * eig_val * jw_val)
-    )
+#     # First component
+#     comp1 = (
+#         - (px - 1j * py) * μ / (2 * mass * mT**2 * τ**2 * jw_val)
+#         + (px - 1j * py) * β * μ * fhw_val / (2 * mass * τ * eig_val * jw_val)
+#         - (px - 1j * py) * SP * (
+#             mT**2 * τ**2 * (-mL + mass * mT * s * τ * fhw_val) * sw_val
+#             + mass * s * (μ + 1j * mT**3 * τ**3 * cjw_val * tw_val)
+#         ) / (4 * mass * mT**3 * s * τ**2 * eig_val * jw_val)
+#     )
 
-    # Second component
-    comp2 = (
-        β * (mass * (mass**2 - mL**2 - mT**2) * s - mL * mT**3 * τ * fhw_val)
-    ) / (
-        2 * mass * mT**2 * s * τ * eig_val * jw_val
-    ) + (
-        mL + mass * mT * s * τ * fhw_val
-    ) / (
-        2 * mass * mT * s * τ * jw_val
-    ) + (
-        SP * (mass * mL + mass**2 * mT * s * τ * fhw_val - pT_sq * s * μ * sw_val)
-    ) / (
-        4 * mass * mT**2 * s * τ * eig_val * jw_val
-    )
+#     # Second component
+#     comp2 = (
+#         β * (mass * (mass**2 - mL**2 - mT**2) * s - mL * mT**3 * τ * fhw_val)
+#     ) / (
+#         2 * mass * mT**2 * s * τ * eig_val * jw_val
+#     ) + (
+#         mL + mass * mT * s * τ * fhw_val
+#     ) / (
+#         2 * mass * mT * s * τ * jw_val
+#     ) + (
+#         SP * (mass * mL + mass**2 * mT * s * τ * fhw_val - pT_sq * s * μ * sw_val)
+#     ) / (
+#         4 * mass * mT**2 * s * τ * eig_val * jw_val
+#     )
 
-    # Third component
-    comp3 = (
-        1/2 - (mL * mT * β) / (2 * mass * s * eig_val) + (
-            SP * (mass**2 * mT * τ * jw_val - 1j * pT_sq * μ * tw_val)
-        ) / (
-            4 * mass * mT**2 * τ * eig_val * jw_val
-        )
-    )
+#     # Third component
+#     comp3 = (
+#         1/2 - (mL * mT * β) / (2 * mass * s * eig_val) + (
+#             SP * (mass**2 * mT * τ * jw_val - 1j * pT_sq * μ * tw_val)
+#         ) / (
+#             4 * mass * mT**2 * τ * eig_val * jw_val
+#         )
+#     )
 
-    # Fourth component
-    comp4 = (
-        (px - 1j * py) * β * μ / (2 * mass * τ * eig_val)
-        - (px - 1j * py) * SP * (
-            mass * mT * s * τ * jw_val * sw_val
-            - 1j * (mL + mass * mT * s * τ * fhw_val) * tw_val
-        ) / (4 * mass * mT * s * eig_val * jw_val)
-    )
+#     # Fourth component
+#     comp4 = (
+#         (px - 1j * py) * β * μ / (2 * mass * τ * eig_val)
+#         - (px - 1j * py) * SP * (
+#             mass * mT * s * τ * jw_val * sw_val
+#             - 1j * (mL + mass * mT * s * τ * fhw_val) * tw_val
+#         ) / (4 * mass * mT * s * eig_val * jw_val)
+#     )
 
-    vec = [
-        mp.mpc(comp1),
-        mp.mpc(comp2),
-        mp.mpc(comp3),
-        mp.mpc(comp4)
-    ]
+#     vec = [
+#         mp.mpc(comp1),
+#         mp.mpc(comp2),
+#         mp.mpc(comp3),
+#         mp.mpc(comp4)
+#     ]
 
-    norm = mp.sqrt(sum(vi * mp.conj(vi) for vi in vec))
-    normalized_vec = [vi / norm for vi in vec]
+#     norm = mp.sqrt(sum(vi * mp.conj(vi) for vi in vec))
+#     normalized_vec = [vi / norm for vi in vec]
 
-    return normalized_vec
+#     return normalized_vec
 
 def compute_normalized_eigenvectors(τ, μ, mass, px, py, β, SP):
     """
@@ -454,17 +454,258 @@ def compute_normalized_eigenvectors(τ, μ, mass, px, py, β, SP):
     s=mp.sign(SP)
     pT_sq = px**2 + py**2
     mL = mp.sqrt(mass**2+μ**2/τ**2)
-    eps_ = 1e-12
+    eps_ = 0#1e-12
 
     eig_valp = eigenvals(τ, μ, 1, 1, β, SP, mass, mp.sqrt(pT_sq))
     eig_valm = eigenvals(τ, μ, 1, -1, β, SP, mass, mp.sqrt(pT_sq))
 
-    fhw_val = fhw(τ, μ, mass, px, py)+eps_
-    jw_val = jw(τ, μ, mass, px, py)+eps_
-    cjw_val = mp.conj(jw_val)+eps_
-    sw_val = sw(τ, μ, mass, px, py)+eps_
-    tw_val = tw(τ, μ, mass, px, py)+eps_
+    fhw_val = fhw(τ, μ, mass, px, py)#+eps_
+    jw_val = jw(τ, μ, mass, px, py)#+eps_
+    cjw_val = mp.conj(jw_val)#+eps_
+    sw_val = sw(τ, μ, mass, px, py)#+eps_
+    tw_val = tw(τ, μ, mass, px, py)#+eps_
 
+    mT = mp.sqrt(mass**2 + pT_sq)
+
+    #################   vpp
+    # First component
+    comp1 = (
+        β * (mass * (-mass**2 + mL**2 + mT**2) * s + mL * mT**3 * τ * fhw_val) 
+    ) / (
+        2 * mass * mT**2 * s * τ * eig_valp * jw_val
+    ) + (
+        mL + mass * mT * s * τ * fhw_val
+    ) / (
+        2 * mass * mT * s * τ * jw_val
+    ) + (
+        SP * (mass * mL + mass**2 * mT * s * τ * fhw_val - pT_sq * s * μ * sw_val)
+    ) / (
+        4 * mass * mT**2 * s * τ * eig_valp * jw_val
+    )
+
+    # Second component
+    comp2 = (
+        (px + 1j * py) * μ / (2 * mass * mT**2 * τ**2 * jw_val)
+        + (px + 1j * py) * β * μ * fhw_val / (2 * mass * τ * eig_valp * jw_val)
+        + (px + 1j * py) * SP * (
+            mT**2 * τ**2 * (-mL + mass * mT * s * τ * fhw_val) * sw_val
+            + mass * s * (μ + 1j * mT**3 * τ**3 * cjw_val * tw_val)
+        ) / (4 * mass * mT**3 * s * τ**2 * eig_valp * jw_val)
+    )
+
+    # Third component
+    comp3 = (
+        (px + 1j * py) * β * μ
+    ) / (
+        2 * mass * τ * eig_valp
+    ) + (
+        (px + 1j * py) * SP * (mass * mT * s * τ * jw_val * sw_val - 1j * (mL + mass * mT * s * τ * fhw_val) * tw_val)
+    ) / (
+        4 * mass * mT * s * eig_valp * jw_val
+    )
+
+    # Fourth component
+    comp4 = (
+        1/2 + (mL * mT * β) / (2 * mass * s * eig_valp) + (
+            SP * (mass**2 * mT * τ * jw_val - 1j * pT_sq * μ * tw_val)
+        ) / (
+            4 * mass * mT**2 * τ * eig_valp * jw_val
+        )
+    )
+
+    vec = [
+        mp.mpc(comp1),
+        mp.mpc(comp2),
+        mp.mpc(comp3),
+        mp.mpc(comp4)
+    ]
+
+    norm = mp.sqrt(sum(vi * mp.conj(vi) for vi in vec))
+    vpp = [vi / norm for vi in vec]
+
+    #################   vpm
+    # First component
+    comp1 = (
+        β * (mass * (-mass**2 + mL**2 + mT**2) * s - mL * mT**3 * τ * fhw_val)
+    ) / (
+        2 * mass * mT**2 * s * τ * eig_valm * jw_val
+    ) - (
+        mL - mass * mT * s * τ * fhw_val
+    ) / (
+        2 * mass * mT * s * τ * jw_val
+    ) - (
+        SP * (mass * mL - mass**2 * mT * s * τ * fhw_val + pT_sq * s * μ * sw_val)
+    ) / (
+        4 * mass * mT**2 * s * τ * eig_valm * jw_val
+    )
+
+    # Second component
+    comp2 = (
+        (px + 1j * py) * μ / (2 * mass * mT**2 * τ**2 * jw_val)
+        + (px + 1j * py) * β * μ * fhw_val / (2 * mass * τ * eig_valm * jw_val)
+        + (px + 1j * py) * SP * (
+            mT**2 * τ**2 * (mL + mass * mT * s * τ * fhw_val) * sw_val
+            + mass * s * (μ + 1j * mT**3 * τ**3 * cjw_val * tw_val)
+        ) / (4 * mass * mT**3 * s * τ**2 * eig_valm * jw_val)
+    )
+
+    # Third component
+    comp3 = (
+        (px + 1j * py) * β * μ
+    ) / (
+        2 * mass * τ * eig_valm
+    ) + (
+        (px + 1j * py) * SP * (mass * mT * s * τ * jw_val * sw_val + 1j * (mL - mass * mT * s * τ * fhw_val) * tw_val)
+    ) / (
+        4 * mass * mT * s * eig_valm * jw_val
+    )
+
+    # Fourth component
+    comp4 = (
+        1/2 - (mL * mT * β) / (2 * mass * s * eig_valm) + (
+            SP * (mass**2 * mT * τ * jw_val - 1j * pT_sq * μ * tw_val)
+        ) / (
+            4 * mass * mT**2 * τ * eig_valm * jw_val
+        )
+    )
+
+    vec = [
+        mp.mpc(comp1),
+        mp.mpc(comp2),
+        mp.mpc(comp3),
+        mp.mpc(comp4)
+    ]
+
+    norm = mp.sqrt(sum(vi * mp.conj(vi) for vi in vec))
+    vpm = [vi / norm for vi in vec]
+
+    #################   vmp
+    # First component
+    comp1 = (
+        - (px - 1j * py) * μ / (2 * mass * mT**2 * τ**2 * jw_val)
+        + (px - 1j * py) * β * μ * fhw_val / (2 * mass * τ * eig_valp * jw_val)
+        - (px - 1j * py) * SP * (
+            mT**2 * τ**2 * (mL + mass * mT * s * τ * fhw_val) * sw_val
+            + mass * s * (μ + 1j * mT**3 * τ**3 * cjw_val * tw_val)
+        ) / (4 * mass * mT**3 * s * τ**2 * eig_valp * jw_val)
+    )
+
+    # Second component
+    comp2 = (
+        β * (mass * (mass**2 - mL**2 - mT**2) * s + mL * mT**3 * τ * fhw_val)
+    ) / (
+        2 * mass * mT**2 * s * τ * eig_valp * jw_val
+    ) - (
+        mL - mass * mT * s * τ * fhw_val
+    ) / (
+        2 * mass * mT * s * τ * jw_val
+    ) - (
+        SP * (mass * mL - mass**2 * mT * s * τ * fhw_val + pT_sq * s * μ * sw_val)
+    ) / (
+        4 * mass * mT**2 * s * τ * eig_valp * jw_val
+    )
+
+    # Third component
+    comp3 = (
+        1/2 + (mL * mT * β) / (2 * mass * s * eig_valp) + (
+            SP * (mass**2 * mT * τ * jw_val - 1j * pT_sq * μ * tw_val)
+        ) / (
+            4 * mass * mT**2 * τ * eig_valp * jw_val
+        )
+    )
+
+    # Fourth component
+    comp4 = (
+        (px - 1j * py) * β * μ / (2 * mass * τ * eig_valp)
+        - (px - 1j * py) * SP * (
+            mass * mT * s * τ * jw_val * sw_val
+            + 1j * (mL - mass * mT * s * τ * fhw_val) * tw_val
+        ) / (4 * mass * mT * s * eig_valp * jw_val)
+    )
+
+    vec = [
+        mp.mpc(comp1),
+        mp.mpc(comp2),
+        mp.mpc(comp3),
+        mp.mpc(comp4)
+    ]
+
+    norm = mp.sqrt(sum(vi * mp.conj(vi) for vi in vec))
+    vmp = [vi / norm for vi in vec]
+
+    #################   vmm
+    # First component
+    comp1 = (
+        - (px - 1j * py) * μ / (2 * mass * mT**2 * τ**2 * jw_val)
+        + (px - 1j * py) * β * μ * fhw_val / (2 * mass * τ * eig_valm * jw_val)
+        - (px - 1j * py) * SP * (
+            mT**2 * τ**2 * (-mL + mass * mT * s * τ * fhw_val) * sw_val
+            + mass * s * (μ + 1j * mT**3 * τ**3 * cjw_val * tw_val)
+        ) / (4 * mass * mT**3 * s * τ**2 * eig_valm * jw_val)
+    )
+
+    # Second component
+    comp2 = (
+        β * (mass * (mass**2 - mL**2 - mT**2) * s - mL * mT**3 * τ * fhw_val)
+    ) / (
+        2 * mass * mT**2 * s * τ * eig_valm * jw_val
+    ) + (
+        mL + mass * mT * s * τ * fhw_val
+    ) / (
+        2 * mass * mT * s * τ * jw_val
+    ) + (
+        SP * (mass * mL + mass**2 * mT * s * τ * fhw_val - pT_sq * s * μ * sw_val)
+    ) / (
+        4 * mass * mT**2 * s * τ * eig_valm * jw_val
+    )
+
+    # Third component
+    comp3 = (
+        1/2 - (mL * mT * β) / (2 * mass * s * eig_valm) + (
+            SP * (mass**2 * mT * τ * jw_val - 1j * pT_sq * μ * tw_val)
+        ) / (
+            4 * mass * mT**2 * τ * eig_valm * jw_val
+        )
+    )
+
+    # Fourth component
+    comp4 = (
+        (px - 1j * py) * β * μ / (2 * mass * τ * eig_valm)
+        - (px - 1j * py) * SP * (
+            mass * mT * s * τ * jw_val * sw_val
+            - 1j * (mL + mass * mT * s * τ * fhw_val) * tw_val
+        ) / (4 * mass * mT * s * eig_valm * jw_val)
+    )
+
+    vec = [
+        mp.mpc(comp1),
+        mp.mpc(comp2),
+        mp.mpc(comp3),
+        mp.mpc(comp4)
+    ]
+
+    norm = mp.sqrt(sum(vi * mp.conj(vi) for vi in vec))
+    vmm = [vi / norm for vi in vec]
+
+    return vpp,vpm,vmp,vmm
+
+def NOFUNCTIONScompute_normalized_eigenvectors(τ, μ, mass, px, py, β, SP,fhw_val,jw_val,sw_val,tw_val):
+    """
+        returns the eigenvectors corresponding to (+E_+,+E_-,-E_+,-E_-). 
+        
+        !!! WARNING: this only works if px^2+py^2 != 0 !!!
+            if px^2 + py^2 == 0 it is not an eigenvector
+    """
+    s=mp.sign(SP)
+    pT_sq = px**2 + py**2
+    mL = mp.sqrt(mass**2+μ**2/τ**2)
+    eps_ = 0#1e-12
+
+    eig_valp = eigenvals(τ, μ, 1, 1, β, SP, mass, mp.sqrt(pT_sq))
+    eig_valm = eigenvals(τ, μ, 1, -1, β, SP, mass, mp.sqrt(pT_sq))
+
+    cjw_val = mp.conj(jw_val)#+eps_
+    
     mT = mp.sqrt(mass**2 + pT_sq)
 
     #################   vpp
@@ -903,7 +1144,7 @@ def Odag_O(τ, μ, mass, px, py, β, SP, mu_T=0):
     Adag_A_T = u*alphadag_alpha*ud + v*vd - v*betadag_beta*vd 
     Bdag_B = z*betadag_beta*zd+w*wd-w*alphadag_alpha*wd  
     Adag_Bdag_T = w*alphadag_alpha*ud + z*vd - z*betadag_beta*vd
-    B_A = Adag_Bdag_T.conjugate()
+    B_A = -Adag_Bdag_T.conjugate() #########################################################àbewere of the sign
     
     return Adag_A_T.transpose(), Bdag_B, B_A, Adag_Bdag_T.transpose()
 
@@ -920,7 +1161,7 @@ def numpy_Odag_O(τ, μ, mass, px, py, β, SP, mu_T=0):
     Adag_A_T = np.dot(u,np.dot(alphadag_alpha,ud)) + np.dot(v,vd) - np.dot(v,np.dot(betadag_beta,vd)) 
     Bdag_B = np.dot(z,np.dot(betadag_beta,zd))+np.dot(w,wd)-np.dot(w,np.dot(alphadag_alpha,wd))  
     Adag_Bdag_T = np.dot(w,np.dot(alphadag_alpha,ud)) + np.dot(z,vd) - np.dot(z,np.dot(betadag_beta,vd))
-    B_A = Adag_Bdag_T.conj()
+    B_A = -Adag_Bdag_T.conj()###########################################################BEWERE of the sign
     
     return Adag_A_T.T, Bdag_B, B_A, Adag_Bdag_T.T
     
@@ -965,6 +1206,57 @@ def numpy_Adag_A(τ, μ, mass, px, py, β, SP, mu_T=0):
     Adag_A_T = np.dot(u,np.dot(alphadag_alpha,ud)) + np.dot(v,vd) - np.dot(v,np.dot(betadag_beta,vd)) 
     
     return Adag_A_T.T
+
+
+def tabulating_energy(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
+    if(px**2+py**2<(1e-5)**2):
+        px=1e-5
+        py=1e-5
+    
+    if(μ**2 < (1e-5)**2):
+        μ=1e-5
+    
+    
+    with mp.workprec(precision):
+        fhw_val = fhw(τ, μ, mass, px, py)
+        jw_val = jw(τ, μ, mass, px, py)
+        sw_val = sw(τ, μ, mass, px, py)
+        tw_val = tw(τ, μ, mass, px, py)
+        
+
+    v1,v2,v3,v4 = NOFUNCTIONScompute_normalized_eigenvectors(τ, μ, mass, px, py, β, SP,fhw_val, jw_val, sw_val,tw_val)
+    
+    U = mp.matrix([[v1[0],v2[0],v3[0],v4[0]],
+                   [v1[1],v2[1],v3[1],v4[1]],
+                   [v1[2],v2[2],v3[2],v4[2]],
+                   [v1[3],v2[3],v3[3],v4[3]]]
+                  )
+    u = mp.matrix([[U[0,0],U[0,1]],
+                   [U[1,0],U[1,1]]])
+    v = mp.matrix([[U[0,2],U[0,3]],
+                   [U[1,2],U[1,3]]])
+    w = mp.matrix([[U[2,0],U[2,1]],
+                   [U[3,0],U[3,1]]])
+    z = mp.matrix([[U[2,2],U[2,3]],
+                   [U[3,2],U[3,3]]])
+    
+    ud = u.transpose_conj()
+    vd = v.transpose_conj()
+    wd = w.transpose_conj()
+    zd = z.transpose_conj()
+    
+    alphadag_alpha = fermi_minor_part(τ, μ, mass, px, py, β, SP, mu_T)
+    betadag_beta = fermi_minor_anti(τ, μ, mass, px, py, β, SP, mu_T)
+    
+    Adag_A_T = u*alphadag_alpha*ud  - v*betadag_beta*vd 
+    Bdag_B = z*betadag_beta*zd-w*alphadag_alpha*wd  
+    Adag_Bdag_T = w*alphadag_alpha*ud  - z*betadag_beta*vd
+    
+    integrand = (2*mp.pi)**(-3) *(mass**2+px**2+py**2)*(fhw_val* (trace(Adag_A_T)+trace(Bdag_B))+2*mp.re(mp.conj(jw_val)*trace(pauli_matrices(1)*Adag_Bdag_T)))
+                                                        
+    
+    return integrand
+    
 
 
 #####################       UTILS      ########################
