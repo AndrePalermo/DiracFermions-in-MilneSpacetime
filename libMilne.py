@@ -1315,7 +1315,7 @@ def tabulating_canonical(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
     long_pressure = -(2*mp.pi)**(-3)*(mp.sqrt(mT2)*μ/τ)*(sw_val* (trace(Adag_A_T)+trace(Bdag_B))+2*mp.im(mp.conj(tw_val)*trace(pauli_matrices(1)*Adag_Bdag_T)))                                                     
     
     
-    pre = (1/2)*(1/τ)*(2*mp.pi)**(-3)
+    pre = (1/2)*(2*mp.pi)**(-3)
     block_A = 2*px*pauli_matrices(0)*mp.im(fw_val)+2*mp.re(fw_val)*(pauli_matrices(2)*((mass**2+py**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))+pauli_matrices(1)*((px*py)/(mass+mp.sqrt(mT2))))
     block_B = 2*px*pauli_matrices(0)*mp.im(fw_val)+2*mp.re(fw_val)*(-pauli_matrices(2)*((mass**2+py**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))+pauli_matrices(1)*((px*py)/(mass+mp.sqrt(mT2))))
     block_C =-px*zw_val*pauli_matrices(1)+ww_val*(pauli_matrices(3)*((mass**2+py**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))+1j*pauli_matrices(0)*((px*py)/(mass+mp.sqrt(mT2))))
