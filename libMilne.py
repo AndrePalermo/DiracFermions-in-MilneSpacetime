@@ -6,6 +6,58 @@ mp.dps = 20
 
 #####################       SPECIAL FUNCTIONS FOR CALCULATIONS      ########################
 
+def FAST_specialfunctions(τ, μ, mass, px, py):
+    # returns fhw, jw, sw, tw
+    exp_ = mp.exp(-mp.pi * μ)
+    h1_m12p = mp.hankel1(-1/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    h1_p12p = mp.hankel1(1/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    h1_p12m = mp.hankel1(1/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    h1_m12m = mp.hankel1(-1/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    h2_m32m = mp.hankel2(-3/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    h2_p12m = mp.hankel2(1/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    h2_m12m = mp.hankel2(-1/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    h2_p32m = mp.hankel2(3/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    h2_m32p = mp.hankel2(-3/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    h2_p12p = mp.hankel2(1/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    h2_m12p = mp.hankel2(-1/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    h2_p32p = mp.hankel2(3/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    
+    hw = (1/8) * exp_ * mp.pi * (
+        h1_m12p *
+        (h2_m32m - h2_p12m) +
+        h1_p12p *
+        (h2_m12m - h2_p32m)
+    )
+    
+    jw = -(1/8) * mp.pi * (
+        h2_m12m *
+        (h2_m32p - h2_p12p) +
+        h2_p12m *
+        (h2_m12p - h2_p32p)
+    )
+    
+    sw = (mp.pi / 4) * exp_ * (
+        h1_p12p * h2_p12m - h1_m12p * h2_m12m
+    )
+    
+    tw = -(mp.pi / 2) * (
+            h2_p12m * h2_p12p
+        )
+    
+    fw = mp.pi/4 *exp_*(
+        h1_m12p*h2_p12m
+    )
+    
+    ww = mp.pi/4 * (
+        h1_m12p*h1_p12m+h1_p12p*h1_m12m
+    )
+    
+    zw = mp.pi/4 *(
+        h1_p12p*h1_m12m-h1_m12p*h1_p12m
+    )
+    
+    return -mp.im(hw), jw, sw, tw, fw, ww, zw
+
 def fhw(τ, μ, mass, px, py):
     """
         Returns mathfrak{h}_w
@@ -1208,7 +1260,7 @@ def numpy_Adag_A(τ, μ, mass, px, py, β, SP, mu_T=0):
     return Adag_A_T.T
 
 
-def tabulating_energy(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
+def tabulating_canonical(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
     if(px**2+py**2<(1e-5)**2):
         px=1e-5
         py=1e-5
@@ -1216,12 +1268,19 @@ def tabulating_energy(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
     if(μ**2 < (1e-5)**2):
         μ=1e-5
     
+    mass = mp.mpf(mass)
+    px   = mp.mpf(px)
+    py   = mp.mpf(py)
+    μ    = mp.mpf(μ)
+    τ    = mp.mpf(τ)
+    β    = mp.mpf(β)
+    SP   = mp.mpf(SP)
+    mu_T = mp.mpf(mu_T)
+    
+    mT2 = mass**2+px**2+py**2
     
     with mp.workprec(precision):
-        fhw_val = fhw(τ, μ, mass, px, py)
-        jw_val = jw(τ, μ, mass, px, py)
-        sw_val = sw(τ, μ, mass, px, py)
-        tw_val = tw(τ, μ, mass, px, py)
+        fhw_val, jw_val, sw_val, tw_val, fw_val, ww_val, zw_val = FAST_specialfunctions(τ, μ, mass, px, py)
         
 
     v1,v2,v3,v4 = NOFUNCTIONScompute_normalized_eigenvectors(τ, μ, mass, px, py, β, SP,fhw_val, jw_val, sw_val,tw_val)
@@ -1252,10 +1311,36 @@ def tabulating_energy(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
     Bdag_B = z*betadag_beta*zd-w*alphadag_alpha*wd  
     Adag_Bdag_T = w*alphadag_alpha*ud  - z*betadag_beta*vd
     
-    integrand = (2*mp.pi)**(-3) *(mass**2+px**2+py**2)*(fhw_val* (trace(Adag_A_T)+trace(Bdag_B))+2*mp.re(mp.conj(jw_val)*trace(pauli_matrices(1)*Adag_Bdag_T)))
-                                                        
+    energy_density = (2*mp.pi)**(-3) *(mT2)*(fhw_val* (trace(Adag_A_T)+trace(Bdag_B))+2*mp.re(mp.conj(jw_val)*trace(pauli_matrices(1)*Adag_Bdag_T)))
+    long_pressure = -(2*mp.pi)**(-3)*(mp.sqrt(mT2)*μ/τ)*(sw_val* (trace(Adag_A_T)+trace(Bdag_B))+2*mp.im(mp.conj(tw_val)*trace(pauli_matrices(1)*Adag_Bdag_T)))                                                     
     
-    return integrand
+    
+    pre = (1/2)*(1/τ)*(2*mp.pi)**(-3)
+    block_A = 2*px*pauli_matrices(0)*mp.im(fw_val)+2*mp.re(fw_val)*(pauli_matrices(2)*((mass**2+py**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))+pauli_matrices(1)*((px*py)/(mass+mp.sqrt(mT2))))
+    block_B = 2*px*pauli_matrices(0)*mp.im(fw_val)+2*mp.re(fw_val)*(-pauli_matrices(2)*((mass**2+py**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))+pauli_matrices(1)*((px*py)/(mass+mp.sqrt(mT2))))
+    block_C =-px*zw_val*pauli_matrices(1)+ww_val*(pauli_matrices(3)*((mass**2+py**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))+1j*pauli_matrices(0)*((px*py)/(mass+mp.sqrt(mT2))))
+
+    integrandx = pre*px*(trace(Adag_A_T*block_A)+trace(Bdag_B*block_B)+2*mp.re(trace(block_C*Adag_Bdag_T)))
+
+    block_Ay = 2*py*pauli_matrices(0)*mp.im(fw_val)-2*mp.re(fw_val)*(pauli_matrices(1)*((mass**2+px**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))+pauli_matrices(2)*((px*py)/(mass+mp.sqrt(mT2))))
+    block_By = 2*py*pauli_matrices(0)*mp.im(fw_val)-2*mp.re(fw_val)*(pauli_matrices(1)*((mass**2+px**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))-pauli_matrices(2)*((px*py)/(mass+mp.sqrt(mT2))))
+    block_Cy =-py*zw_val*pauli_matrices(1)-ww_val*(pauli_matrices(0)*(1j*(mass**2+px**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))+pauli_matrices(3)*((px*py)/(mass+mp.sqrt(mT2))))
+
+    integrandy = pre*py*(trace(Adag_A_T*block_Ay)+trace(Bdag_B*block_By)+2*mp.re(trace(block_Cy*Adag_Bdag_T)))
+    
+    transv_pressure = integrandx+integrandy
+    
+    return energy_density, transv_pressure, long_pressure
+
+
+def tabulating_belinfante(mass, px, py, μ, τ, β, precision = 50):
+    with mp.workprec(precision):
+        energy_density = (2/ τ) *(2*mp.pi)**(-3)*mp.sqrt(mass**2+px**2+py**2+(μ/τ)**2)*2/(mp.exp(β*mp.sqrt(mass**2+px**2+py**2+(μ/τ)**2))+1)
+        long_pressure = (2/ τ) *(2*mp.pi)**(-3)*( μ**2 /(τ**2 *mp.sqrt(mass**2+px**2+py**2+(μ/τ)**2)))*2/(mp.exp(β*mp.sqrt(mass**2+px**2+py**2+(μ/τ)**2))+1)
+        transv_pressure = (2/ τ) *(2*mp.pi)**(-3)*( (px**2+py**2) /(2 *mp.sqrt(mass**2+px**2+py**2+(μ/τ)**2)))*2/(mp.exp(β*mp.sqrt(mass**2+px**2+py**2+(μ/τ)**2))+1)
+         
+    
+    return energy_density,transv_pressure,long_pressure
     
 
 
