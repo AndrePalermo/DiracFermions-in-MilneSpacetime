@@ -1307,30 +1307,54 @@ def tabulating_canonical(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
     alphadag_alpha = fermi_minor_part(τ, μ, mass, px, py, β, SP, mu_T)
     betadag_beta = fermi_minor_anti(τ, μ, mass, px, py, β, SP, mu_T)
     
-    Adag_A_T = u*alphadag_alpha*ud  - v*betadag_beta*vd 
+    Adag_A_T = u*alphadag_alpha*ud  - v*betadag_beta*vd #This is the transposed
     Bdag_B = z*betadag_beta*zd-w*alphadag_alpha*wd  
-    Adag_Bdag_T = w*alphadag_alpha*ud  - z*betadag_beta*vd
+    Adag_Bdag_T = w*alphadag_alpha*ud  - z*betadag_beta*vd #this is the transposed
     
+    #------ Energy Density --------#
     energy_density = (2*mp.pi)**(-3) *(mT2)*(fhw_val* (trace(Adag_A_T)+trace(Bdag_B))+2*mp.re(mp.conj(jw_val)*trace(pauli_matrices(1)*Adag_Bdag_T)))
+
+    #------ Longitudinal Pressure ------#
     long_pressure = -(2*mp.pi)**(-3)*(mp.sqrt(mT2)*μ/τ)*(sw_val* (trace(Adag_A_T)+trace(Bdag_B))+2*mp.im(mp.conj(tw_val)*trace(pauli_matrices(1)*Adag_Bdag_T)))                                                     
     
-    
+    #------ Transverse Pressure --------#
     pre = (1/2)*(2*mp.pi)**(-3)
     block_A = 2*px*pauli_matrices(0)*mp.im(fw_val)+2*mp.re(fw_val)*(pauli_matrices(2)*((mass**2+py**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))+pauli_matrices(1)*((px*py)/(mass+mp.sqrt(mT2))))
     block_B = 2*px*pauli_matrices(0)*mp.im(fw_val)+2*mp.re(fw_val)*(-pauli_matrices(2)*((mass**2+py**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))+pauli_matrices(1)*((px*py)/(mass+mp.sqrt(mT2))))
     block_C =-px*zw_val*pauli_matrices(1)+ww_val*(pauli_matrices(3)*((mass**2+py**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))+1j*pauli_matrices(0)*((px*py)/(mass+mp.sqrt(mT2))))
 
+    block_B = block_B.transpose()
+    
     integrandx = pre*px*(trace(Adag_A_T*block_A)+trace(Bdag_B*block_B)+2*mp.re(trace(block_C*Adag_Bdag_T)))
 
     block_Ay = 2*py*pauli_matrices(0)*mp.im(fw_val)-2*mp.re(fw_val)*(pauli_matrices(1)*((mass**2+px**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))+pauli_matrices(2)*((px*py)/(mass+mp.sqrt(mT2))))
     block_By = 2*py*pauli_matrices(0)*mp.im(fw_val)-2*mp.re(fw_val)*(pauli_matrices(1)*((mass**2+px**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))-pauli_matrices(2)*((px*py)/(mass+mp.sqrt(mT2))))
     block_Cy =-py*zw_val*pauli_matrices(1)-ww_val*(pauli_matrices(0)*(1j*(mass**2+px**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))+pauli_matrices(3)*((px*py)/(mass+mp.sqrt(mT2))))
 
+    block_By = block_By.transpose()
+    
     integrandy = pre*py*(trace(Adag_A_T*block_Ay)+trace(Bdag_B*block_By)+2*mp.re(trace(block_Cy*Adag_Bdag_T)))
     
     transv_pressure = integrandx+integrandy
     
-    return energy_density, transv_pressure, long_pressure
+    #-------- Spin Density -------#
+    preS = (1/2)*(2*mp.pi)**(-3)
+    block_AS = (1/τ)*(mass/(mp.sqrt(mass**2+px**2+py**2)))*pauli_matrices(3)-sw_val*(px*pauli_matrices(1)+py*pauli_matrices(2))
+    block_BS = -(1/τ)*(mass/(mp.sqrt(mass**2+px**2+py**2)))*pauli_matrices(3)+sw_val*(px*pauli_matrices(1)-py*pauli_matrices(2))
+    block_CS = mp.conj(tw_val)*(1j*px*pauli_matrices(0)+py*pauli_matrices(3))
+
+    block_BS = block_BS.transpose()
+    
+    spin_density = preS*(trace(Adag_A_T*block_AS)-trace(Bdag_B*block_BS)+2*mp.re(trace(Adag_Bdag_T*block_CS)))
+
+    #-------- Spin Torque --------#
+    integrandxT = preS*px*(trace(Adag_A_T*block_Ay)+trace(Bdag_B*block_By)+2*mp.re(trace(block_Cy*Adag_Bdag_T)))
+    integrandyT = preS*py*(trace(Adag_A_T*block_A)+trace(Bdag_B*block_B)+2*mp.re(trace(block_C*Adag_Bdag_T)))
+
+    torque= integrandxT-integrandyT
+
+    return energy_density, transv_pressure, long_pressure, spin_density, torque
+
 
 
 def tabulating_belinfante(mass, px, py, μ, τ, β, precision = 50):
