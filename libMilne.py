@@ -1223,7 +1223,47 @@ def exact_polarization_longitudinal(mass, τ, β, SP, precision = 50, mu_min=-10
     
     return Num_/Den_
      
+
+def tabulating_logZ(mass, px, py, μ, τ, Temp, Om, chem_pot=0, precision = 50):
+    Ep = eigenvals(τ, μ, 1, 1, 1/Temp, Om/Temp, mass,mp.sqrt(px**2+py**2))
+    Em = eigenvals(τ, μ, 1, -1, 1/Temp, Om/Temp, mass,mp.sqrt(px**2+py**2))
     
+    dT = 1e-10
+    dOm = 1e-10
+    
+    ζ= chem_pot/Temp
+    
+    EpDT = eigenvals(τ, μ, 1, 1, 1/(Temp+dT), Om/(Temp+dT), mass,mp.sqrt(px**2+py**2))
+    EmDT = eigenvals(τ, μ, 1, -1, 1/(Temp+dT), Om/(Temp+dT), mass,mp.sqrt(px**2+py**2))
+    
+    EpDOm = eigenvals(τ, μ, 1, 1, 1/Temp, (Om+dOm)/Temp, mass,mp.sqrt(px**2+py**2))
+    EmDOm = eigenvals(τ, μ, 1, -1, 1/Temp, (Om+dOm)/Temp, mass,mp.sqrt(px**2+py**2))
+    
+    with mp.workprec(precision):
+        logZ = (2*mp.pi)**(-3) *1/τ * (
+            mp.log(1+mp.exp(-(Ep-ζ)))+mp.log(1+mp.exp(-(Em-ζ)))
+            +mp.log(1+mp.exp(-(Ep+ζ)))+mp.log(1+mp.exp(-(Em+ζ)))
+            )
+        dlogZ_dT = dT**(-1) * (
+            (2*mp.pi)**(-3) *1/τ * (
+            mp.log(1+mp.exp(-(EpDT-ζ)))+mp.log(1+mp.exp(-(EmDT-ζ)))
+            +mp.log(1+mp.exp(-(EpDT+ζ)))+mp.log(1+mp.exp(-(EmDT+ζ))))
+            -logZ
+            )
+        
+        dLogZ_dOm = dOm**(-1) * (
+            (2*mp.pi)**(-3) *1/τ * (
+                mp.log(1+mp.exp(-(EpDOm-ζ)))+mp.log(1+mp.exp(-(EmDOm-ζ)))
+                +mp.log(1+mp.exp(-(EpDOm+ζ)))+mp.log(1+mp.exp(-(EmDOm+ζ)))
+                )
+            -logZ
+            )
+        
+    pressure = Temp*logZ
+    dP_dT = logZ+Temp*dlogZ_dT
+    dP_dOm = Temp*dLogZ_dOm
+    
+    return pressure, dP_dT, dP_dOm     
 
 
 #####################       UTILS      ########################
