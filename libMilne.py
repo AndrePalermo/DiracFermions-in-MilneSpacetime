@@ -1,13 +1,14 @@
 import mpmath as mp
 import numpy as np
-import scipy as spy
+from scipy.integrate import simpson
+import matplotlib.pyplot as plt
 
-mp.dps = 20
+# mp.dps = 50
 
 #####################       SPECIAL FUNCTIONS FOR CALCULATIONS      ########################
 
 def FAST_specialfunctions(τ, μ, mass, px, py):
-    # returns fhw, jw, sw, tw
+    # returns fhw, jw, sw, tw, fw, ww, zw
     exp_ = mp.exp(-mp.pi * μ)
     h1_m12p = mp.hankel1(-1/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
     h1_p12p = mp.hankel1(1/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
@@ -78,6 +79,26 @@ def fhw(τ, μ, mass, px, py):
         - mp.hankel1(1/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ) * mp.hankel2(3/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
     )
     return result
+
+def FAST_fhw(τ, μ, mass, px, py):
+    """
+        Returns fh_w
+    """
+    h1_m12p = mp.hankel1(-1/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    h1_p12p = mp.hankel1(1/2 + 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    h2_m32m = mp.hankel2(-3/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    h2_p12m = mp.hankel2(1/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    h2_m12m = mp.hankel2(-1/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    h2_p32m = mp.hankel2(3/2 - 1j*μ, mp.sqrt(mass**2 + px**2 + py**2) * τ)
+    
+    hw = (1/8) * mp.exp(-mp.pi * μ) * mp.pi * (
+        h1_m12p *
+        (h2_m32m - h2_p12m) +
+        h1_p12p *
+        (h2_m12m - h2_p32m)
+    )
+    
+    return -mp.im(hw)
 
 def hw(τ, μ, mass, px, py):
     """
@@ -187,314 +208,6 @@ def eigenvals(τ, μ, pm1, pm2, β, SP, mass, pT):
     term3 = pm2 * abs(SP) * β * mp.sqrt(mass**2 + μ**2 / τ**2)
 
     return pm1 * mp.sqrt(term1 + term2 + term3)
-
-# def compute_normalized_vector_plusplus(τ, μ, mass, px, py, β, SP):
-#     """
-#         returns the eigenvector corresponding to +E_+. 
-        
-#         !!! WARNING: this only works if px^2+py^2 != 0 !!!
-#             if px^2 + py^2 == 0 it is not an eigenvector
-#     """
-#     s=mp.sign(SP)
-#     pT_sq = px**2 + py**2
-#     mL = mp.sqrt(mass**2+μ**2/τ**2)
-
-#     eig_val = eigenvals(τ, μ, 1, 1, β, SP, mass, mp.sqrt(pT_sq))
-
-#     fhw_val = fhw(τ, μ, mass, px, py)
-#     jw_val = jw(τ, μ, mass, px, py)
-#     cjw_val = mp.conj(jw_val)
-#     sw_val = sw(τ, μ, mass, px, py)
-#     tw_val = tw(τ, μ, mass, px, py)
-
-#     mT = mp.sqrt(mass**2 + pT_sq)
-
-#     # First component
-#     comp1 = (
-#         β * (mass * (-mass**2 + mL**2 + mT**2) * s + mL * mT**3 * τ * fhw_val) 
-#     ) / (
-#         2 * mass * mT**2 * s * τ * eig_val * jw_val
-#     ) + (
-#         mL + mass * mT * s * τ * fhw_val
-#     ) / (
-#         2 * mass * mT * s * τ * jw_val
-#     ) + (
-#         SP * (mass * mL + mass**2 * mT * s * τ * fhw_val - pT_sq * s * μ * sw_val)
-#     ) / (
-#         4 * mass * mT**2 * s * τ * eig_val * jw_val
-#     )
-
-#     # Second component
-#     comp2 = (
-#         (px + 1j * py) * μ / (2 * mass * mT**2 * τ**2 * jw_val)
-#         + (px + 1j * py) * β * μ * fhw_val / (2 * mass * τ * eig_val * jw_val)
-#         + (px + 1j * py) * SP * (
-#             mT**2 * τ**2 * (-mL + mass * mT * s * τ * fhw_val) * sw_val
-#             + mass * s * (μ + 1j * mT**3 * τ**3 * cjw_val * tw_val)
-#         ) / (4 * mass * mT**3 * s * τ**2 * eig_val * jw_val)
-#     )
-
-#     # Third component
-#     comp3 = (
-#         (px + 1j * py) * β * μ
-#     ) / (
-#         2 * mass * τ * eig_val
-#     ) + (
-#         (px + 1j * py) * SP * (mass * mT * s * τ * jw_val * sw_val - 1j * (mL + mass * mT * s * τ * fhw_val) * tw_val)
-#     ) / (
-#         4 * mass * mT * s * eig_val * jw_val
-#     )
-
-#     # Fourth component
-#     comp4 = (
-#         1/2 + (mL * mT * β) / (2 * mass * s * eig_val) + (
-#             SP * (mass**2 * mT * τ * jw_val - 1j * pT_sq * μ * tw_val)
-#         ) / (
-#             4 * mass * mT**2 * τ * eig_val * jw_val
-#         )
-#     )
-
-#     vec = [
-#         mp.mpc(comp1),
-#         mp.mpc(comp2),
-#         mp.mpc(comp3),
-#         mp.mpc(comp4)
-#     ]
-
-#     norm = mp.sqrt(sum(vi * mp.conj(vi) for vi in vec))
-#     normalized_vec = [vi / norm for vi in vec]
-
-#     return normalized_vec
-
-# def compute_normalized_vector_plusminus(τ, μ, mass, px, py, β, SP):
-#     """
-#         returns the eigenvector corresponding to +E_-. 
-        
-#         !!! WARNING: this only works if px^2+py^2 != 0 !!!
-#             if px^2 + py^2 == 0 it is not an eigenvector
-#     """
-#     s = mp.sign(SP)
-#     pT_sq = px**2 + py**2
-#     mL = mp.sqrt(mass**2 + μ**2 / τ**2)
-
-#     eig_val = eigenvals(τ, μ, 1, -1, β, SP, mass, mp.sqrt(pT_sq))
-
-#     fhw_val = fhw(τ, μ, mass, px, py)
-#     jw_val = jw(τ, μ, mass, px, py)
-#     cjw_val = mp.conj(jw_val)
-#     sw_val = sw(τ, μ, mass, px, py)
-#     tw_val = tw(τ, μ, mass, px, py)
-    
-#     mT = mp.sqrt(mass**2 + pT_sq)
-
-#     # First component
-#     comp1 = (
-#         β * (mass * (-mass**2 + mL**2 + mT**2) * s - mL * mT**3 * τ * fhw_val)
-#     ) / (
-#         2 * mass * mT**2 * s * τ * eig_val * jw_val
-#     ) - (
-#         mL - mass * mT * s * τ * fhw_val
-#     ) / (
-#         2 * mass * mT * s * τ * jw_val
-#     ) - (
-#         SP * (mass * mL - mass**2 * mT * s * τ * fhw_val + pT_sq * s * μ * sw_val)
-#     ) / (
-#         4 * mass * mT**2 * s * τ * eig_val * jw_val
-#     )
-
-#     # Second component
-#     comp2 = (
-#         (px + 1j * py) * μ / (2 * mass * mT**2 * τ**2 * jw_val)
-#         + (px + 1j * py) * β * μ * fhw_val / (2 * mass * τ * eig_val * jw_val)
-#         + (px + 1j * py) * SP * (
-#             mT**2 * τ**2 * (mL + mass * mT * s * τ * fhw_val) * sw_val
-#             + mass * s * (μ + 1j * mT**3 * τ**3 * cjw_val * tw_val)
-#         ) / (4 * mass * mT**3 * s * τ**2 * eig_val * jw_val)
-#     )
-
-#     # Third component
-#     comp3 = (
-#         (px + 1j * py) * β * μ
-#     ) / (
-#         2 * mass * τ * eig_val
-#     ) + (
-#         (px + 1j * py) * SP * (mass * mT * s * τ * jw_val * sw_val + 1j * (mL - mass * mT * s * τ * fhw_val) * tw_val)
-#     ) / (
-#         4 * mass * mT * s * eig_val * jw_val
-#     )
-
-#     # Fourth component
-#     comp4 = (
-#         1/2 - (mL * mT * β) / (2 * mass * s * eig_val) + (
-#             SP * (mass**2 * mT * τ * jw_val - 1j * pT_sq * μ * tw_val)
-#         ) / (
-#             4 * mass * mT**2 * τ * eig_val * jw_val
-#         )
-#     )
-
-#     vec = [
-#         mp.mpc(comp1),
-#         mp.mpc(comp2),
-#         mp.mpc(comp3),
-#         mp.mpc(comp4)
-#     ]
-
-#     norm = mp.sqrt(sum(vi * mp.conj(vi) for vi in vec))
-#     normalized_vec = [vi / norm for vi in vec]
-
-#     return normalized_vec
-
-# def compute_normalized_vector_minusplus(τ, μ, mass, px, py, β, SP):
-#     """
-#         returns the eigenvector corresponding to -E_+. 
-        
-#         !!! WARNING: this only works if px^2+py^2 != 0 !!!
-#             if px^2 + py^2 == 0 it is not an eigenvector
-#     """
-#     s = mp.sign(SP)
-#     pT_sq = px**2 + py**2
-#     mL = mp.sqrt(mass**2 + μ**2 / τ**2)
-
-#     eig_val = eigenvals(τ, μ, 1, 1, β, SP, mass, mp.sqrt(pT_sq))
-
-#     fhw_val = fhw(τ, μ, mass, px, py)
-#     jw_val = jw(τ, μ, mass, px, py)
-#     cjw_val = mp.conj(jw_val)
-#     sw_val = sw(τ, μ, mass, px, py)
-#     tw_val = tw(τ, μ, mass, px, py)
-    
-#     mT = mp.sqrt(mass**2 + pT_sq)
-
-#     # First component
-#     comp1 = (
-#         - (px - 1j * py) * μ / (2 * mass * mT**2 * τ**2 * jw_val)
-#         + (px - 1j * py) * β * μ * fhw_val / (2 * mass * τ * eig_val * jw_val)
-#         - (px - 1j * py) * SP * (
-#             mT**2 * τ**2 * (mL + mass * mT * s * τ * fhw_val) * sw_val
-#             + mass * s * (μ + 1j * mT**3 * τ**3 * cjw_val * tw_val)
-#         ) / (4 * mass * mT**3 * s * τ**2 * eig_val * jw_val)
-#     )
-
-#     # Second component
-#     comp2 = (
-#         β * (mass * (mass**2 - mL**2 - mT**2) * s + mL * mT**3 * τ * fhw_val)
-#     ) / (
-#         2 * mass * mT**2 * s * τ * eig_val * jw_val
-#     ) - (
-#         mL - mass * mT * s * τ * fhw_val
-#     ) / (
-#         2 * mass * mT * s * τ * jw_val
-#     ) - (
-#         SP * (mass * mL - mass**2 * mT * s * τ * fhw_val + pT_sq * s * μ * sw_val)
-#     ) / (
-#         4 * mass * mT**2 * s * τ * eig_val * jw_val
-#     )
-
-#     # Third component
-#     comp3 = (
-#         1/2 + (mL * mT * β) / (2 * mass * s * eig_val) + (
-#             SP * (mass**2 * mT * τ * jw_val - 1j * pT_sq * μ * tw_val)
-#         ) / (
-#             4 * mass * mT**2 * τ * eig_val * jw_val
-#         )
-#     )
-
-#     # Fourth component
-#     comp4 = (
-#         (px - 1j * py) * β * μ / (2 * mass * τ * eig_val)
-#         - (px - 1j * py) * SP * (
-#             mass * mT * s * τ * jw_val * sw_val
-#             + 1j * (mL - mass * mT * s * τ * fhw_val) * tw_val
-#         ) / (4 * mass * mT * s * eig_val * jw_val)
-#     )
-
-#     vec = [
-#         mp.mpc(comp1),
-#         mp.mpc(comp2),
-#         mp.mpc(comp3),
-#         mp.mpc(comp4)
-#     ]
-
-#     norm = mp.sqrt(sum(vi * mp.conj(vi) for vi in vec))
-#     normalized_vec = [vi / norm for vi in vec]
-
-#     return normalized_vec
-
-# def compute_normalized_vector_minusminus(τ, μ, mass, px, py, β, SP):
-#     """
-#         returns the eigenvector corresponding to -E_-. 
-        
-#         !!! WARNING: this only works if px^2+py^2 != 0 !!!
-#             if px^2 + py^2 == 0 it is not an eigenvector
-#     """
-#     s = mp.sign(SP)
-#     pT_sq = px**2 + py**2
-#     mL = mp.sqrt(mass**2 + μ**2 / τ**2)
-
-#     eig_val = eigenvals(τ, μ, 1, -1, β, SP, mass, mp.sqrt(pT_sq))
-
-#     fhw_val = fhw(τ, μ, mass, px, py)
-#     jw_val = jw(τ, μ, mass, px, py)
-#     cjw_val = mp.conj(jw_val)
-#     sw_val = sw(τ, μ, mass, px, py)
-#     tw_val = tw(τ, μ, mass, px, py)
-
-#     mT = mp.sqrt(mass**2 + pT_sq)
-
-#     # First component
-#     comp1 = (
-#         - (px - 1j * py) * μ / (2 * mass * mT**2 * τ**2 * jw_val)
-#         + (px - 1j * py) * β * μ * fhw_val / (2 * mass * τ * eig_val * jw_val)
-#         - (px - 1j * py) * SP * (
-#             mT**2 * τ**2 * (-mL + mass * mT * s * τ * fhw_val) * sw_val
-#             + mass * s * (μ + 1j * mT**3 * τ**3 * cjw_val * tw_val)
-#         ) / (4 * mass * mT**3 * s * τ**2 * eig_val * jw_val)
-#     )
-
-#     # Second component
-#     comp2 = (
-#         β * (mass * (mass**2 - mL**2 - mT**2) * s - mL * mT**3 * τ * fhw_val)
-#     ) / (
-#         2 * mass * mT**2 * s * τ * eig_val * jw_val
-#     ) + (
-#         mL + mass * mT * s * τ * fhw_val
-#     ) / (
-#         2 * mass * mT * s * τ * jw_val
-#     ) + (
-#         SP * (mass * mL + mass**2 * mT * s * τ * fhw_val - pT_sq * s * μ * sw_val)
-#     ) / (
-#         4 * mass * mT**2 * s * τ * eig_val * jw_val
-#     )
-
-#     # Third component
-#     comp3 = (
-#         1/2 - (mL * mT * β) / (2 * mass * s * eig_val) + (
-#             SP * (mass**2 * mT * τ * jw_val - 1j * pT_sq * μ * tw_val)
-#         ) / (
-#             4 * mass * mT**2 * τ * eig_val * jw_val
-#         )
-#     )
-
-#     # Fourth component
-#     comp4 = (
-#         (px - 1j * py) * β * μ / (2 * mass * τ * eig_val)
-#         - (px - 1j * py) * SP * (
-#             mass * mT * s * τ * jw_val * sw_val
-#             - 1j * (mL + mass * mT * s * τ * fhw_val) * tw_val
-#         ) / (4 * mass * mT * s * eig_val * jw_val)
-#     )
-
-#     vec = [
-#         mp.mpc(comp1),
-#         mp.mpc(comp2),
-#         mp.mpc(comp3),
-#         mp.mpc(comp4)
-#     ]
-
-#     norm = mp.sqrt(sum(vi * mp.conj(vi) for vi in vec))
-#     normalized_vec = [vi / norm for vi in vec]
-
-#     return normalized_vec
 
 def compute_normalized_eigenvectors(τ, μ, mass, px, py, β, SP):
     """
@@ -1185,6 +898,7 @@ def numpy_block_and_dagger_bogoliubov(τ, μ, mass, px, py, β, SP):
 
 def Odag_O(τ, μ, mass, px, py, β, SP, mu_T=0):
     """
+        !!!!!!!!!!RESULTS ARE NOT RENORMALIZED!!!!!!!!!!!
         returns <A^dagger_r A_s>, <B^dagger_r B_s>, <A^dagger_r B^dagger_s>, and <B_r A_s> as mpmatrices
         r and s are row and column of the matrix 
     """
@@ -1196,12 +910,13 @@ def Odag_O(τ, μ, mass, px, py, β, SP, mu_T=0):
     Adag_A_T = u*alphadag_alpha*ud + v*vd - v*betadag_beta*vd 
     Bdag_B = z*betadag_beta*zd+w*wd-w*alphadag_alpha*wd  
     Adag_Bdag_T = w*alphadag_alpha*ud + z*vd - z*betadag_beta*vd
-    B_A = -Adag_Bdag_T.conjugate() #########################################################àbewere of the sign
+    B_A = -Adag_Bdag_T.conjugate() 
     
     return Adag_A_T.transpose(), Bdag_B, B_A, Adag_Bdag_T.transpose()
 
 def numpy_Odag_O(τ, μ, mass, px, py, β, SP, mu_T=0):
     """
+        !!!!!!!!!!RESULTS ARE NOT RENORMALIZED!!!!!!!!!!!
         returns <A^dagger_r A_s>, <B^dagger_r B_s>, <A^dagger_r B^dagger_s>, and <B_r A_s> as numpy arrays
         r and s are row and column of the matrix 
     """
@@ -1213,12 +928,13 @@ def numpy_Odag_O(τ, μ, mass, px, py, β, SP, mu_T=0):
     Adag_A_T = np.dot(u,np.dot(alphadag_alpha,ud)) + np.dot(v,vd) - np.dot(v,np.dot(betadag_beta,vd)) 
     Bdag_B = np.dot(z,np.dot(betadag_beta,zd))+np.dot(w,wd)-np.dot(w,np.dot(alphadag_alpha,wd))  
     Adag_Bdag_T = np.dot(w,np.dot(alphadag_alpha,ud)) + np.dot(z,vd) - np.dot(z,np.dot(betadag_beta,vd))
-    B_A = -Adag_Bdag_T.conj()###########################################################BEWERE of the sign
+    B_A = -Adag_Bdag_T.conj()
     
     return Adag_A_T.T, Bdag_B, B_A, Adag_Bdag_T.T
     
 def Adag_A(τ, μ, mass, px, py, β, SP, mu_T=0):
     """
+        !!!!!!!!!!RESULTS ARE NOT RENORMALIZED!!!!!!!!!!!
         returns <A^dagger_r A_s> as mpmatrix
         r and s are row and column of the matrix 
     """
@@ -1240,6 +956,7 @@ def Adag_A(τ, μ, mass, px, py, β, SP, mu_T=0):
     
 def numpy_Adag_A(τ, μ, mass, px, py, β, SP, mu_T=0):
     """
+        !!!!!!!!!!RESULTS ARE NOT RENORMALIZED!!!!!!!!!!!
         returns <A^dagger_r A_s> as mpmatrix
         r and s are row and column of the matrix 
     """
@@ -1260,7 +977,14 @@ def numpy_Adag_A(τ, μ, mass, px, py, β, SP, mu_T=0):
     return Adag_A_T.T
 
 
+#####################   TABULATION AND INTEGRATION      ###########################
+
+
 def tabulating_canonical(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
+    """
+        Returns the value of RENORMALIZED energy density, pressure (transverse and longitudinal),
+        spin density and torque at a given kinematical point and for fixed T e SP.
+    """
     if(px**2+py**2<(1e-5)**2):
         px=1e-5
         py=1e-5
@@ -1386,6 +1110,10 @@ def tabulating_canonical(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
 
 
 def tabulating_Polarization(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
+    """
+        Returns the RENORMALIZED vaulues of traces Tr(\sigma_i <A^\dagger A>)
+        to be used for polarization calculations
+    """
     if(px**2+py**2<(1e-5)**2):
         px=1e-5
         py=1e-5
@@ -1454,6 +1182,9 @@ def tabulating_Polarization(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50
 
 
 def tabulating_belinfante(mass, px, py, μ, τ, β, precision = 50):
+    """
+        Returns the integrands of Belinfante's thermal expectation values
+    """
     with mp.workprec(precision):
         energy_density = (2/ τ) *(2*mp.pi)**(-3)*mp.sqrt(mass**2+px**2+py**2+(μ/τ)**2)*2/(mp.exp(β*mp.sqrt(mass**2+px**2+py**2+(μ/τ)**2))+1)
         long_pressure = (2/ τ) *(2*mp.pi)**(-3)*( μ**2 /(τ**2 *mp.sqrt(mass**2+px**2+py**2+(μ/τ)**2)))*2/(mp.exp(β*mp.sqrt(mass**2+px**2+py**2+(μ/τ)**2))+1)
@@ -1461,6 +1192,37 @@ def tabulating_belinfante(mass, px, py, μ, τ, β, precision = 50):
          
     
     return energy_density,transv_pressure,long_pressure
+
+
+
+def exact_polarization_longitudinal(mass, τ, β, SP, precision = 50, mu_min=-10, mu_max=10, N=100):
+    """
+        Returns the value of the exact polarization calculated on a grid.
+        
+        !!!!!!!!!WARNING: user must check the quality of the grid by hand and set correct
+                          values for mu_min and mu_max
+    """
+    mu_grid = np.linspace(mu_min, mu_max, N)
+        
+    integrand_gridNum = np.zeros((N))
+    integrand_gridDen = np.zeros((N))
+    
+    for i, mu in enumerate(mu_grid):
+        mL = mp.sqrt(mass**2+mu**2/τ**2)    
+        with mp.workprec(precision):
+            fhw_val = FAST_fhw(τ, mu, mass, 0, 0)
+            chfactor = 1/(mp.cosh(β*mL)+mp.cosh(SP/2))
+            shSP = mp.sinh(SP/2)
+            expcoshfactor = mp.exp(-β*mL) + mp.cosh(SP/2)
+             
+        integrand_gridNum[i] = shSP * chfactor
+        integrand_gridDen[i] =τ*mass**2 *(fhw_val/mL) *expcoshfactor * chfactor
+                    
+    Den_ = simpson(integrand_gridDen, x=mu_grid, axis=0)
+    Num_ = simpson(integrand_gridNum, x=mu_grid, axis=0)
+    
+    return Num_/Den_
+     
     
 
 
@@ -1496,8 +1258,7 @@ def to_numpy(mpobject):
     else:
         print("to_numpy function error! Unkonwn case of mpobject conversion.")
         return np.nan
-
-    
+   
 def pauli_matrices(i):
     """
         returns the ith component of the "four-vector" of Pauli matrices [I,sx,sy,sz]_i
@@ -1514,4 +1275,51 @@ def trace(A):
     """
         returns the trace of a mpmath matrix
     """
-    return sum(A[i, i] for i in range(min(A.rows, A.cols)))       
+    return sum(A[i, i] for i in range(min(A.rows, A.cols))) 
+
+def plot_integrand_slice(integrand_grid, mu_grid, px_grid, py_grid, x_axis=1,y_axis = 2, fixed_idx=None):
+    """
+    Plot a 2D slice of the 3D integrand grid.
+
+    Parameters:
+    - integrand_grid: 3D numpy array of integrand values, ordered [mu,px,py]
+    - mu_grid, px_grid, py_grid: 1D arrays of grid points
+    - x_axis: 0,1 or 2 to choose which variable is on the x-axis
+    - fixed_idx: index to fix for the third dimension (if None, use the middle slice)
+    """
+    if x_axis not in [0, 1, 2] or y_axis not in [0, 1, 2]:
+        raise ValueError("x_axis and y_axis must be 0, 1, or 2")
+
+    if x_axis == y_axis:
+        raise ValueError("x_axis and y_axis must be different")
+
+    axis_names = ["mu", "px", "py"]
+    thegridlist = [mu_grid, px_grid, py_grid]
+
+    if fixed_idx is None:
+        fixed_idx = len(thegridlist[0]) // 2  
+
+    X, Y = np.meshgrid(thegridlist[x_axis], thegridlist[y_axis])
+
+    all_axes = [0, 1, 2]
+    fixed_axis = list(set(all_axes) - {x_axis, y_axis})[0]
+
+    slicer = [slice(None)] * 3
+    slicer[fixed_axis] = fixed_idx
+    Z = integrand_grid[tuple(slicer)]
+
+    # Reorder Z to match X, Y
+    remaining_axes = [ax for ax in all_axes if ax != fixed_axis]
+    perm = [remaining_axes.index(x_axis), remaining_axes.index(y_axis)]
+    Z = np.transpose(Z, perm)
+    
+        
+
+    plt.figure(figsize=(10, 6))
+    plt.pcolormesh(X, Y, Z, shading='auto', cmap='viridis')
+    plt.colorbar(label='Integrand value')
+    plt.xlabel(axis_names[x_axis])
+    plt.ylabel(axis_names[y_axis])
+    plt.title(f'Integrand slice at {axis_names[fixed_axis]} = {thegridlist[fixed_axis][fixed_idx]:.2f}')
+    plt.show()
+      
