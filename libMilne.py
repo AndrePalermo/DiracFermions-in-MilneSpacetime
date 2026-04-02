@@ -1307,21 +1307,21 @@ def tabulating_canonical(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
     alphadag_alpha = fermi_minor_part(τ, μ, mass, px, py, β, SP, mu_T)
     betadag_beta = fermi_minor_anti(τ, μ, mass, px, py, β, SP, mu_T)
     
-    v1r,v2r,v3r,v4r = NOFUNCTIONScompute_normalized_eigenvectors(τ, μ, mass, px, py, 1/1e-10, 1e-12,fhw_val, jw_val, sw_val,tw_val)
+    v1r,v2r,v3r,v4r = NOFUNCTIONScompute_normalized_eigenvectors(τ, μ, mass, px, py, 1/1e-10, 1e-15,fhw_val, jw_val, sw_val,tw_val)
     
     Ur = mp.matrix([[v1r[0],v2r[0],v3r[0],v4r[0]],
-                   [v1r[1],v2r[1],v3r[1],v4r[1]],
-                   [v1r[2],v2r[2],v3r[2],v4r[2]],
-                   [v1r[3],v2r[3],v3r[3],v4r[3]]]
+                    [v1r[1],v2r[1],v3r[1],v4r[1]],
+                    [v1r[2],v2r[2],v3r[2],v4r[2]],
+                    [v1r[3],v2r[3],v3r[3],v4r[3]]]
                   )
     ur = mp.matrix([[Ur[0,0],Ur[0,1]],
-                   [Ur[1,0],Ur[1,1]]])
+                    [Ur[1,0],Ur[1,1]]])
     vr = mp.matrix([[Ur[0,2],Ur[0,3]],
-                   [Ur[1,2],Ur[1,3]]])
+                    [Ur[1,2],Ur[1,3]]])
     wr = mp.matrix([[Ur[2,0],Ur[2,1]],
-                   [Ur[3,0],Ur[3,1]]])
+                    [Ur[3,0],Ur[3,1]]])
     zr = mp.matrix([[Ur[2,2],Ur[2,3]],
-                   [Ur[3,2],Ur[3,3]]])
+                    [Ur[3,2],Ur[3,3]]])
     
     udr = ur.transpose_conj()
     vdr = vr.transpose_conj()
@@ -1331,13 +1331,14 @@ def tabulating_canonical(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
     alphadag_alphar = fermi_minor_part(τ, μ, mass, px, py, 1/1e-10, 1e-12, mu_T)
     betadag_betar = fermi_minor_anti(τ, μ, mass, px, py, 1/1e-10, 1e-12, mu_T)
     Adag_A_Tr = ur*alphadag_alphar*udr  +vr*vdr- vr*betadag_betar*vdr #This is the transposed
-    Bdag_Br = zr*betadag_betar*zdr-wr*alphadag_alphar*wdr  
-    Adag_Bdag_Tr = wr*alphadag_alphar*udr  - zr*betadag_betar*vdr
+    Bdag_Br = zr*betadag_betar*zdr+wr*wdr-wr*alphadag_alphar*wdr  
+    Adag_Bdag_Tr = wr*alphadag_alphar*udr +zr*vdr  - zr*betadag_betar*vdr
     
     Adag_A_T = u*alphadag_alpha*ud  +v*vd- v*betadag_beta*vd -Adag_A_Tr#This is the transposed
-    Bdag_B = z*betadag_beta*zd-w*alphadag_alpha*wd -Bdag_Br  
-    Adag_Bdag_T = w*alphadag_alpha*ud  - z*betadag_beta*vd -Adag_Bdag_Tr #this is the transposed
-    
+    Bdag_B = z*betadag_beta*zd +wr*wdr-w*alphadag_alpha*wd -Bdag_Br  
+    Adag_Bdag_T = w*alphadag_alpha*ud +zr*vdr  - z*betadag_beta*vd -Adag_Bdag_Tr #this is the transposed
+
+        
     #------ Energy Density --------#
     energy_density = (2*mp.pi)**(-3) *(mT2)*(fhw_val* (trace(Adag_A_T)+trace(Bdag_B))+2*mp.re(mp.conj(jw_val)*trace(pauli_matrices(1)*Adag_Bdag_T)))
 
@@ -1381,6 +1382,7 @@ def tabulating_canonical(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
     torque= integrandxT-integrandyT
 
     return energy_density, transv_pressure, long_pressure, spin_density, torque
+
 
 
 def tabulating_Polarization(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
