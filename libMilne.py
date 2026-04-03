@@ -1059,8 +1059,8 @@ def tabulating_canonical(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
     Adag_Bdag_Tr = wr*alphadag_alphar*udr +zr*vdr  - zr*betadag_betar*vdr
     
     Adag_A_T = u*alphadag_alpha*ud  +v*vd- v*betadag_beta*vd -Adag_A_Tr#This is the transposed
-    Bdag_B = z*betadag_beta*zd +wr*wdr-w*alphadag_alpha*wd -Bdag_Br  
-    Adag_Bdag_T = w*alphadag_alpha*ud +zr*vdr  - z*betadag_beta*vd -Adag_Bdag_Tr #this is the transposed
+    Bdag_B = z*betadag_beta*zd +w*wd-w*alphadag_alpha*wd -Bdag_Br  
+    Adag_Bdag_T = w*alphadag_alpha*ud +z*vd  - z*betadag_beta*vd -Adag_Bdag_Tr #this is the transposed
 
         
     #------ Energy Density --------#
