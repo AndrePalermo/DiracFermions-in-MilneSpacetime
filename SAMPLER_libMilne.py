@@ -13,7 +13,7 @@ import h5py
 import numpy as np
 import mpmath as mp
 
-from libMilne_FINAL import (
+from libMilne import (
     tabulating_canonical,
     tabulating_belinfante,
     tabulating_Polarization,
