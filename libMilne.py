@@ -2,8 +2,7 @@ import mpmath as mp
 import numpy as np
 from scipy.integrate import simpson
 import matplotlib.pyplot as plt
-
-# mp.dps = 50
+import os
 
 #####################       SPECIAL FUNCTIONS FOR CALCULATIONS      ########################
 
@@ -1269,6 +1268,151 @@ def tabulating_logZ(mass, px, py, μ, τ, β, SP, ζ=0, precision = 50):
     return pressure, dP_dT, dP_dOm     
 
 
+##################### PARALLEL PROCESSES ##########################
+
+def process_SP(SP, mass, tau, beta, mu_T, mu_grid, px_grid, py_grid):
+    integrand_gridE = np.zeros((len(mu_grid), len(px_grid), len(py_grid)))
+    integrand_gridPT = np.zeros_like(integrand_gridE)
+    integrand_gridPL = np.zeros_like(integrand_gridE)
+    integrand_gridS = np.zeros_like(integrand_gridE)
+    integrand_gridT = np.zeros_like(integrand_gridE)
+
+    for i, mu in enumerate(mu_grid):
+        for j, px in enumerate(px_grid):
+            for k, py in enumerate(py_grid):
+                resE, resPT, resPL, resS, resT = tabulating_canonical(
+                    mass, px, py, mu, tau, beta, -SP, mu_T, precision=80
+                )
+                integrand_gridE[i,j,k] = float(to_numpy(resE))
+                integrand_gridPT[i,j,k] = float(to_numpy(resPT))
+                integrand_gridPL[i,j,k] = float(to_numpy(resPL))
+                integrand_gridS[i,j,k] = float(to_numpy(resS))
+                integrand_gridT[i,j,k] = float(to_numpy(resT))
+
+    result_mu = simpson(integrand_gridE, x=mu_grid, axis=0)
+    result_px = simpson(result_mu, x=px_grid, axis=0)
+    result_ = simpson(result_px, x=py_grid, axis=0)
+
+    result_mu_PT = simpson(integrand_gridPT, x=mu_grid, axis=0)
+    result_px_PT = simpson(result_mu_PT, x=px_grid, axis=0)
+    result_PT = simpson(result_px_PT, x=py_grid, axis=0)
+
+    result_mu_PL = simpson(integrand_gridPL, x=mu_grid, axis=0)
+    result_px_PL = simpson(result_mu_PL, x=px_grid, axis=0)
+    result_PL = simpson(result_px_PL, x=py_grid, axis=0)
+
+    result_mu_S = simpson(integrand_gridS, x=mu_grid, axis=0)
+    result_px_S = simpson(result_mu_S, x=px_grid, axis=0)
+    result_S = simpson(result_px_S, x=py_grid, axis=0)
+
+    result_mu_T = simpson(integrand_gridT, x=mu_grid, axis=0)
+    result_px_T = simpson(result_mu_T, x=px_grid, axis=0)
+    result_T = simpson(result_px_T, x=py_grid, axis=0)
+
+    return result_, result_PT, result_PL, result_S, result_T
+
+
+def process_logZ(SP, mass, tau, beta, mu_grid, px_grid, py_grid):
+    integrand_gridP = np.zeros((len(mu_grid), len(px_grid), len(py_grid)))
+    integrand_gridP_dT = np.zeros_like(integrand_gridP)
+    integrand_gridS = np.zeros_like(integrand_gridP)
+    
+    for i, mu in enumerate(mu_grid):
+        for j, px in enumerate(px_grid):
+            for k, py in enumerate(py_grid):
+                resP, resP_dT, resS = tabulating_logZ(
+                    mass, px, py, mu, tau, beta, SP, precision=80
+                )
+                integrand_gridP[i,j,k] = float(to_numpy(resP))
+                integrand_gridP_dT[i,j,k] = float(to_numpy(resP_dT))
+                integrand_gridS[i,j,k] = float(to_numpy(resS))
+                
+    result_mu = simpson(integrand_gridP, x=mu_grid, axis=0)
+    result_px = simpson(result_mu, x=px_grid, axis=0)
+    result_ = simpson(result_px, x=py_grid, axis=0)
+
+    result_mu_PT = simpson(integrand_gridP_dT, x=mu_grid, axis=0)
+    result_px_PT = simpson(result_mu_PT, x=px_grid, axis=0)
+    result_PT = simpson(result_px_PT, x=py_grid, axis=0)
+
+    result_mu_S = simpson(integrand_gridS, x=mu_grid, axis=0)
+    result_px_S = simpson(result_mu_S, x=px_grid, axis=0)
+    result_S = simpson(result_px_S, x=py_grid, axis=0)
+
+    return result_, result_PT, result_S
+
+
+def process_Om_tofile(Om, mass, tau, beta, mu_T, mu_grid, px_grid, py_grid, output_dir="./"):
+    output_file=f"{output_dir}/results_Om={Om}_mass={mass}_Temp={1/beta}_tau={tau}_mu_T={mu_T}.txt"
+    if os.path.isfile(output_file):
+        print(f"Om={Om} already computed. Skipping calculation.\n")
+        return Om, -1
+    
+    integrand_gridE = np.zeros((len(mu_grid), len(px_grid), len(py_grid)))
+    integrand_gridPT = np.zeros_like(integrand_gridE)
+    integrand_gridPL = np.zeros_like(integrand_gridE)
+    integrand_gridS = np.zeros_like(integrand_gridE)
+    integrand_gridT = np.zeros_like(integrand_gridE)
+
+    for i, mu in enumerate(mu_grid):
+        for j, px in enumerate(px_grid):
+            for k, py in enumerate(py_grid):
+                resE, resPT, resPL, resS, resT = tabulating_canonical(
+                    mass, px, py, mu, tau, beta, -Om*beta, mu_T, precision=80
+                )
+                integrand_gridE[i,j,k] = float(to_numpy(resE))
+                integrand_gridPT[i,j,k] = float(to_numpy(resPT))
+                integrand_gridPL[i,j,k] = float(to_numpy(resPL))
+                integrand_gridS[i,j,k] = float(to_numpy(resS))
+                integrand_gridT[i,j,k] = float(to_numpy(resT))
+
+    result_mu = simpson(integrand_gridE, x=mu_grid, axis=0)
+    result_px = simpson(result_mu, x=px_grid, axis=0)
+    result_ = simpson(result_px, x=py_grid, axis=0)
+
+    result_mu_PT = simpson(integrand_gridPT, x=mu_grid, axis=0)
+    result_px_PT = simpson(result_mu_PT, x=px_grid, axis=0)
+    result_PT = simpson(result_px_PT, x=py_grid, axis=0)
+
+    result_mu_PL = simpson(integrand_gridPL, x=mu_grid, axis=0)
+    result_px_PL = simpson(result_mu_PL, x=px_grid, axis=0)
+    result_PL = simpson(result_px_PL, x=py_grid, axis=0)
+
+    result_mu_S = simpson(integrand_gridS, x=mu_grid, axis=0)
+    result_px_S = simpson(result_mu_S, x=px_grid, axis=0)
+    result_S = simpson(result_px_S, x=py_grid, axis=0)
+
+    result_mu_T = simpson(integrand_gridT, x=mu_grid, axis=0)
+    result_px_T = simpson(result_mu_T, x=px_grid, axis=0)
+    result_T = simpson(result_px_T, x=py_grid, axis=0)
+
+    np.savetxt(output_file,(Om, result_, result_PT, result_PL, result_S, result_T))
+    
+    return Om, result_, result_PT, result_PL, result_S, result_T
+
+def process_Polarization(SP, mass, px, py, tau, beta, mu_T, mu_min, mu_max, N, precision=300):
+
+    mu_grid = np.linspace(mu_min, mu_max, N)
+    
+    integrand_gridD = np.zeros((N))
+    integrand_gridZ = np.zeros((N))
+    
+    for i, mu in enumerate(mu_grid):
+        resD, resX, resY, resZ = tabulating_Polarization(
+                mass, px, py, mu, tau, beta, -SP, mu_T, precision=precision
+            )
+        integrand_gridD[i] = float(to_numpy(resD))
+        # integrand_gridX[i] = float(to_numpy(resX))
+        # integrand_gridY[i] = float(to_numpy(resY))
+        integrand_gridZ[i] = float(to_numpy(resZ))
+                
+    result_D = simpson(integrand_gridD, x=mu_grid, axis=0)
+    
+    result_Z = simpson(integrand_gridZ, x=mu_grid, axis=0)
+    
+    return  result_Z/result_D
+
+
 #####################       UTILS      ########################
 
 
@@ -1366,3 +1510,68 @@ def plot_integrand_slice(integrand_grid, mu_grid, px_grid, py_grid, x_axis=1,y_a
     plt.title(f'Integrand slice at {axis_names[fixed_axis]} = {thegridlist[fixed_axis][fixed_idx]:.2f}')
     plt.show()
       
+      
+def middle_dense_grid(N, lower, upper, strength=2):
+    """
+    Create a 1D grid with N points between lower and upper,
+    denser in the middle.
+    
+    Parameters:
+        N (int): number of points
+        lower (float): lower bound
+        upper (float): upper bound
+        strength (float): >1 increases density in the middle
+    
+    Returns:
+        x (np.ndarray): 1D array of N points
+    """
+    t = np.linspace(0, 1, N)  # uniform parameter in [0,1]
+    
+    # Stretching function: denser at t=0.5
+    # Map t in [0,1] to x in [0,1] nonlinearly
+    # Using a simple quadratic centered at 0.5:
+    x_mapped = 0.5 + 0.5 * np.sign(t - 0.5) * np.abs(2*(t - 0.5))**strength
+    
+    # Rescale to [lower, upper]
+    x = lower + (upper - lower) * x_mapped
+    return x
+
+def joinSPfiles(directory,mass,beta,tau,mu_T, cleanall=False):    
+    allfiles = []
+    for file in os.listdir(directory):
+        if file.startswith("results"):
+            allfiles.append(file)
+    
+    filename = f"joined_mass={mass}_Temp={1/beta}_tau={tau}_mu_T={mu_T}.txt"
+    
+    SPlist = []
+    Elist = []
+    PTlist = []
+    PLlist = []
+    Slist = []
+    Tlist = []
+    
+    for f in allfiles:
+        sp, e, pt, pl, s, t = np.loadtxt(f"{directory}/{f}")
+        SPlist.append(sp)
+        Elist.append(e) 
+        PTlist.append(pt)
+        PLlist.append(pl)
+        Slist.append(s) 
+        Tlist.append(t) 
+        if cleanall:
+            os.remove(f"{directory}/{f}")
+        
+        
+    sorted_SP = sorted(SPlist) 
+    indices = [SPlist.index(x) for x in sorted_SP]
+    Elist = [Elist[i] for i in indices]
+    PTlist = [PTlist[i] for i in indices]
+    PLlist = [PLlist[i] for i in indices]
+    Slist = [Slist[i] for i in indices]
+    Tlist = [Tlist[i] for i in indices]
+    
+    np.savetxt(f"{directory}/{filename}",(sorted_SP,Elist, PTlist, PLlist, Slist, Tlist))
+    
+    
+        
