@@ -29,7 +29,7 @@ The notebook milneNumerics.ipynb is a self-contained commented tutorial, with re
 
 ## Computing expectation values and integrand grid with Milne Sampler
 
-Parallel sampler to compute thermodynamic and polarization observables on a 3D momentum grid and store results in HDF5 files is done with Sampler_libMilne.py
+Parallel sampler to compute thermodynamic and polarization observables on a 3D momentum grid and store results in HDF5 files is done with SAMPLER_libMilne.py
 The sampler evaluates physical observables on a grid in momentum space:
 
 - transverse momenta: `p_x`, `p_y`
@@ -63,7 +63,7 @@ There are three sampling modes:
 To use the sampler, for example, do:
 
 ```bash
-python Sampler_libmilne.py compute\
+python SAMPLER_libMilne.py compute\
   --xmax 2.0 \
   --npt 41 \
   --T 0.1 \
@@ -89,15 +89,17 @@ These contain:
 To merge the files do
 
 ```bash
-python Sampler_libmilne.py merge \
+python SAMPLER_libMilne.py merge \
   --outdir output \
   --merged-file merged.h5
 ```
 
 Merged files stack all slices along a new axis.
+The merged file is saved in the same directory of SAMPLER_libMilne
 
 Once you have the merged file, use 
 ```bash
-python integrals_observables.py outputdir_name
+python Integrals_Obs.py merged.h5 
 ```
-to generate .txt files corresponding to the integrated quantities. 
+to generate .txt files corresponding to the integrated quantities. The txt files are saved in the Observables_txt directory. 
+The plots can be produced using the notebook plots.ipynb.
