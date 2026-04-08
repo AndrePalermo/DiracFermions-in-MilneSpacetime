@@ -1117,8 +1117,8 @@ def tabulating_Polarization(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50
         px=1e-5
         py=1e-5
     
-    if(μ**2 < (1e-5)**2):
-        μ=1e-5
+    if(μ**2 < (1e-4)**2):
+        μ=1e-4
     
     mass = mp.mpf(mass)
     px   = mp.mpf(px)
