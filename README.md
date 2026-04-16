@@ -6,7 +6,7 @@ This repository contains all the code produced during the writing of the paper x
 
 This project is written in Python. It uses standard python libraries plus mpmath in order to calculate with high precision Hankel functions with complex order. The calculation of integrals is done by constructing a grid and using scipy.simpson. Temperature, mass and proper spin potential (denoted as `Ω` in our paper) are intended in GeV, whereas `τ` shall be given in units GeV⁻¹. 
 
-**!! Warning:** When we started writing the python code, we were using a convention for the sign of the spin potential which is opposite to the one adopted in the final version of our manuscript. Therefore, the diagonalization procedure in our library produces the results associated to `-Ω` instead of `Ω`. In most functions this is taken into account, but not everywhere. This notation problem may be addressed in the future, if necessary. For the time, being users should keep this sign in mind. 
+**!! Warning:** When we started writing the python code, we were using a convention for the sign of the spin potential which is opposite to the one adopted in the final version of our manuscript. Therefore, the diagonalization procedure in our library produces the results associated to `-Ω` instead of `Ω`. In most functions this is taken into account, but not everywhere. This notation problem may be addressed in the future, if necessary. For the time being, users should keep this sign in mind. 
 
 ## Main library
 
@@ -23,7 +23,7 @@ The slowest part in our code is the evaluation of the Hankel functions, for whic
 
 ## Tutorial notebook
 
-The notebook milneNumerics.ipynb is a self-contained commented tutorial, with relevant functions that can be used to make tests and reproduce our results.
+The notebook milneNumerics.ipynb is a self-contained commented tutorial, with relevant functions that can be used to make tests and reproduce our results. The plotting script plots.ipynb can be used to reproduce the plots presented in the paper.
 
 
 
