@@ -979,7 +979,7 @@ def numpy_Adag_A(τ, μ, mass, px, py, β, SP, mu_T=0):
 #####################   TABULATION AND INTEGRATION      ###########################
 
 
-def tabulating_canonical(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
+def tabulating_canonical(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 80):
     """
         Returns the value of RENORMALIZED energy density, pressure (transverse and longitudinal),
         spin density and torque at a given kinematical point and for fixed T e SP.
@@ -1030,37 +1030,9 @@ def tabulating_canonical(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
     alphadag_alpha = fermi_minor_part(τ, μ, mass, px, py, β, SP, mu_T)
     betadag_beta = fermi_minor_anti(τ, μ, mass, px, py, β, SP, mu_T)
     
-    v1r,v2r,v3r,v4r = NOFUNCTIONScompute_normalized_eigenvectors(τ, μ, mass, px, py, 1/1e-10, 1e-15,fhw_val, jw_val, sw_val,tw_val)
-    
-    Ur = mp.matrix([[v1r[0],v2r[0],v3r[0],v4r[0]],
-                    [v1r[1],v2r[1],v3r[1],v4r[1]],
-                    [v1r[2],v2r[2],v3r[2],v4r[2]],
-                    [v1r[3],v2r[3],v3r[3],v4r[3]]]
-                  )
-    ur = mp.matrix([[Ur[0,0],Ur[0,1]],
-                    [Ur[1,0],Ur[1,1]]])
-    vr = mp.matrix([[Ur[0,2],Ur[0,3]],
-                    [Ur[1,2],Ur[1,3]]])
-    wr = mp.matrix([[Ur[2,0],Ur[2,1]],
-                    [Ur[3,0],Ur[3,1]]])
-    zr = mp.matrix([[Ur[2,2],Ur[2,3]],
-                    [Ur[3,2],Ur[3,3]]])
-    
-    udr = ur.transpose_conj()
-    vdr = vr.transpose_conj()
-    wdr = wr.transpose_conj()
-    zdr = zr.transpose_conj()
-    
-    alphadag_alphar = fermi_minor_part(τ, μ, mass, px, py, 1/1e-10, 1e-12, mu_T)
-    betadag_betar = fermi_minor_anti(τ, μ, mass, px, py, 1/1e-10, 1e-12, mu_T)
-    Adag_A_Tr = ur*alphadag_alphar*udr  +vr*vdr- vr*betadag_betar*vdr #This is the transposed
-    Bdag_Br = zr*betadag_betar*zdr+wr*wdr-wr*alphadag_alphar*wdr  
-    Adag_Bdag_Tr = wr*alphadag_alphar*udr +zr*vdr  - zr*betadag_betar*vdr
-    
-    Adag_A_T = u*alphadag_alpha*ud  +v*vd- v*betadag_beta*vd -Adag_A_Tr#This is the transposed
-    Bdag_B = z*betadag_beta*zd +w*wd-w*alphadag_alpha*wd -Bdag_Br  
-    Adag_Bdag_T = w*alphadag_alpha*ud +z*vd  - z*betadag_beta*vd -Adag_Bdag_Tr #this is the transposed
-
+    Adag_A_T = u*alphadag_alpha*ud  - v*betadag_beta*vd
+    Bdag_B = z*betadag_beta*zd -w*alphadag_alpha*wd  
+    Adag_Bdag_T = w*alphadag_alpha*ud  - z*betadag_beta*vd
         
     #------ Energy Density --------#
     energy_density = (2*mp.pi)**(-3) *(mT2)*(fhw_val* (trace(Adag_A_T)+trace(Bdag_B))+2*mp.re(mp.conj(jw_val)*trace(pauli_matrices(1)*Adag_Bdag_T)))
@@ -1073,16 +1045,12 @@ def tabulating_canonical(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
     block_A = 2*px*pauli_matrices(0)*mp.im(fw_val)+2*mp.re(fw_val)*(pauli_matrices(2)*((mass**2+py**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))+pauli_matrices(1)*((px*py)/(mass+mp.sqrt(mT2))))
     block_B = 2*px*pauli_matrices(0)*mp.im(fw_val)+2*mp.re(fw_val)*(-pauli_matrices(2)*((mass**2+py**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))+pauli_matrices(1)*((px*py)/(mass+mp.sqrt(mT2))))
     block_C =-px*zw_val*pauli_matrices(1)+ww_val*(pauli_matrices(3)*((mass**2+py**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))+1j*pauli_matrices(0)*((px*py)/(mass+mp.sqrt(mT2))))
-
-    block_B = block_B.transpose()
     
     integrandx = pre*px*(trace(Adag_A_T*block_A)+trace(Bdag_B*block_B)+2*mp.re(trace(block_C*Adag_Bdag_T)))
 
     block_Ay = 2*py*pauli_matrices(0)*mp.im(fw_val)-2*mp.re(fw_val)*(pauli_matrices(1)*((mass**2+px**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))+pauli_matrices(2)*((px*py)/(mass+mp.sqrt(mT2))))
     block_By = 2*py*pauli_matrices(0)*mp.im(fw_val)-2*mp.re(fw_val)*(pauli_matrices(1)*((mass**2+px**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))-pauli_matrices(2)*((px*py)/(mass+mp.sqrt(mT2))))
     block_Cy =-py*zw_val*pauli_matrices(1)-ww_val*(pauli_matrices(0)*(1j*(mass**2+px**2+mass*mp.sqrt(mT2))/(mass+mp.sqrt(mT2)))+pauli_matrices(3)*((px*py)/(mass+mp.sqrt(mT2))))
-
-    block_By = block_By.transpose()
     
     integrandy = pre*py*(trace(Adag_A_T*block_Ay)+trace(Bdag_B*block_By)+2*mp.re(trace(block_Cy*Adag_Bdag_T)))
     
@@ -1093,8 +1061,6 @@ def tabulating_canonical(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50):
     block_AS = (1/τ)*(mass/(mp.sqrt(mass**2+px**2+py**2)))*pauli_matrices(3)-sw_val*(px*pauli_matrices(1)+py*pauli_matrices(2))
     block_BS = -(1/τ)*(mass/(mp.sqrt(mass**2+px**2+py**2)))*pauli_matrices(3)+sw_val*(px*pauli_matrices(1)-py*pauli_matrices(2))
     block_CS = mp.conj(tw_val)*(1j*px*pauli_matrices(0)+py*pauli_matrices(3))
-
-    block_BS = block_BS.transpose()
     
     spin_density = preS*(trace(Adag_A_T*block_AS)-trace(Bdag_B*block_BS)+2*mp.re(trace(Adag_Bdag_T*block_CS)))
 
@@ -1152,31 +1118,13 @@ def tabulating_Polarization(mass, px, py, μ, τ, β, SP, mu_T=0, precision = 50
     alphadag_alpha = fermi_minor_part(τ, μ, mass, px, py, β, SP, mu_T)
     betadag_beta = fermi_minor_anti(τ, μ, mass, px, py, β, SP, mu_T)
     
-    v1r,v2r,v3r,v4r = NOFUNCTIONScompute_normalized_eigenvectors(τ, μ, mass, px, py, 1/1e-10, 1e-12,fhw_val, jw_val, sw_val,tw_val)
-    
-    Ur = mp.matrix([[v1r[0],v2r[0],v3r[0],v4r[0]],
-                   [v1r[1],v2r[1],v3r[1],v4r[1]],
-                   [v1r[2],v2r[2],v3r[2],v4r[2]],
-                   [v1r[3],v2r[3],v3r[3],v4r[3]]]
-                  )
-    ur = mp.matrix([[Ur[0,0],Ur[0,1]],
-                   [Ur[1,0],Ur[1,1]]])
-    vr = mp.matrix([[Ur[0,2],Ur[0,3]],
-                   [Ur[1,2],Ur[1,3]]])
-    
-    udr = ur.transpose_conj()
-    vdr = vr.transpose_conj()
-    
-    alphadag_alphar = fermi_minor_part(τ, μ, mass, px, py, 1/1e-10, 1e-12, mu_T)
-    betadag_betar = fermi_minor_anti(τ, μ, mass, px, py, 1/1e-10, 1e-12, mu_T)
     
     
-    
-    Adag_A_T = u*alphadag_alpha*ud  +v*vd- v*betadag_beta*vd - (ur*alphadag_alphar*udr  +vr*vdr- vr*betadag_betar*vdr) 
+    Adag_A_T = u*alphadag_alpha*ud  - v*betadag_beta*vd 
     Adag_A = Adag_A_T.transpose()
    
     
-    return trace(Adag_A), trace(Adag_A*pauli_matrices(1)), trace(Adag_A*pauli_matrices(2)),trace(Adag_A*pauli_matrices(3))
+    return 0.5*trace(Adag_A), 0.5*trace(Adag_A*pauli_matrices(1)), 0.5*trace(Adag_A*pauli_matrices(2)),0.5*trace(Adag_A*pauli_matrices(3))
 
 
 
@@ -1312,7 +1260,7 @@ def process_SP(SP, mass, tau, beta, mu_T, mu_grid, px_grid, py_grid):
     return result_, result_PT, result_PL, result_S, result_T
 
 
-def process_logZ(SP, mass, tau, beta, mu_grid, px_grid, py_grid):
+def process_logZ(SP, mass, tau, beta, mu_grid, px_grid, py_grid,precision=80):
     integrand_gridP = np.zeros((len(mu_grid), len(px_grid), len(py_grid)))
     integrand_gridP_dT = np.zeros_like(integrand_gridP)
     integrand_gridS = np.zeros_like(integrand_gridP)
@@ -1321,7 +1269,7 @@ def process_logZ(SP, mass, tau, beta, mu_grid, px_grid, py_grid):
         for j, px in enumerate(px_grid):
             for k, py in enumerate(py_grid):
                 resP, resP_dT, resS = tabulating_logZ(
-                    mass, px, py, mu, tau, beta, SP, precision=80
+                    mass, px, py, mu, tau, beta, SP, precision=precision
                 )
                 integrand_gridP[i,j,k] = float(to_numpy(resP))
                 integrand_gridP_dT[i,j,k] = float(to_numpy(resP_dT))
