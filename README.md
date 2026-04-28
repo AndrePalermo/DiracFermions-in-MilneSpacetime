@@ -2,7 +2,15 @@
 
 This repository contains all the code produced during the writing of the paper xxxx.xxxx. If you use this code, please cite the relevant publication:
 
-@article{...}
+@article{Palermo:2026mwu,
+    author = "Palermo, Andrea and Roselli, Daniele",
+    title = "{Exact expectation values in a boost-invariant fluid of Dirac fermions with finite spin density}",
+    eprint = "2604.15926",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-th",
+    month = "4",
+    year = "2026"
+}
 
 This project is written in Python. It uses standard python libraries plus mpmath in order to calculate with high precision Hankel functions with complex order. The calculation of integrals is done by constructing a grid and using scipy.simpson. Temperature, mass and proper spin potential (denoted as `Ω` in our paper) are intended in GeV, whereas `τ` shall be given in units GeV⁻¹. 
 
